@@ -13,6 +13,7 @@ import { createListTransaction } from "../../../Api/Finance/FinanceApi";
 import { openSnackbar } from "../../../features/snackbar";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
+import { AmountFormater } from "../../../globalFunctions";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
@@ -26,7 +27,9 @@ const PayLoanPaymentModal = (props) => {
   const [openNote, setOpenNote] = useState(false);
   const [is_intrest, setIntrest] = useState(false);
   const [candbList, setCandbList] = useState([]);
-  const [loanData, setLoanData] = useState({});
+  const [loanData, setLoanData] = useState({
+    amount: 0
+  });
   const [selectAccount, setSelectAccount] = useState({});
 
   //Handle functions
@@ -134,7 +137,9 @@ const PayLoanPaymentModal = (props) => {
             <TextFieldCalculator setCalvalue={setCalvalue} />
           )}
           <p className="text-[27px] font-[500] text-right">
-            {loanData.amount + calvalue || "0.00"}
+            {AmountFormater(loanData.amount + parseFloat(calvalue)) || "0.00"}
+            {/* {console.log(typeof calvalue)}
+            {console.log(parseInt(calvalue, 0) + loanData.amount)} */}
             <span className="ml-1 text-[15px] font-[400] text-[#6E88A6]">
               {userData.country_details.currency_simbol}
               {"  "}
@@ -237,8 +242,8 @@ const PayLoanPaymentModal = (props) => {
             <p className="text-[16px] font-[500]">
               {selectAccount.account_name}
             </p>
-            <span className="text-[18px] font-[500] mx-2">{">"}</span>
-            <p className="text-[16px] font-[500]">{loanData.loan_name}</p>
+            {/* <span className="text-[18px] font-[500] mx-2">{">"}</span>
+            <p className="text-[16px] font-[500]">{loanData.loan_name}</p> */}
           </div>
           <IconButton onClick={submitLoanPay}>
             <img src={Icone.CheckIcon} alt="" />
@@ -312,9 +317,8 @@ function NotesModal(props) {
               className="border-[#E4E4E4] border-[1px] px-[11px] py-[9px] rounded-[8px] text-[11px] mb-3 w-full"
               name="income"
               id="incomeField"
-              // cols="25"
               rows="6"
-              placeholder="Type here.."
+              placeholder="Type here..."
               value={props.note}
               onChange={e => props.setNote(e.target.value)}
             ></textarea>

@@ -42,7 +42,7 @@ const TextFieldCalculator = (props) => {
         props.setCalvalue(result)
         break;
       default:
-        props.setCalvalue("");
+        props.setCalvalue(0);
         break;
     }
   }

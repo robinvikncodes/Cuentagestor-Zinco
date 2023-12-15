@@ -38,7 +38,7 @@ const TransferTransaction = (props) => {
   const queryClient = useQueryClient();
 
   //States
-  const [is_First, setIs_First] = useState(true);
+  const [note, setNote] = useState("");
   const [toggle, setToggle] = useState(true);
   const [calValueFrom, setCalValueFrom] = useState("");
   const [calValueTo, setCalValueTo] = useState("");
@@ -239,7 +239,8 @@ const TransferTransaction = (props) => {
             fromAccount: res.data.from_account,
             toAccount: res.data.to_account,
           });
-          callToAccount();
+          setNote(res.data.description)
+          // callToAccount();
           setSelectCountry({
             fromCountry: res.data.from_country,
             toCountry: res.data.to_country,
@@ -260,19 +261,21 @@ const TransferTransaction = (props) => {
       console.log(res.data);
       setcountryList(res.data);
 
-      let firstCountry = res.data.filter(obj => obj.id === userData.country_details.id)
+      let firstCountry = res.data.filter(
+        (obj) => obj.id === userData.country_details.id
+      );
       console.log(firstCountry);
       !props.edit && callFromAccount(firstCountry[0].id);
       !props.edit && callToAccount(firstCountry[0].id);
-      !props.edit && setSelectCountry({
-        fromCountry: userData.country_details,
-        toCountry: userData.country_details,
-      });
+      !props.edit &&
+        setSelectCountry({
+          fromCountry: userData.country_details,
+          toCountry: userData.country_details,
+        });
       !props.edit && setfromCountry(userData.country_details.country_code);
       !props.edit && setToCountry(userData.country_details.country_code);
     },
   });
-
 
   const mutationTransation = useMutation({
     mutationFn: (newTodo) => {
@@ -297,7 +300,7 @@ const TransferTransaction = (props) => {
             severity: "success",
           })
         );
-          
+
         props.handleClose();
       }
     },
@@ -310,7 +313,7 @@ const TransferTransaction = (props) => {
       from_account: selectedAccount.fromAccount.id,
       to_account: selectedAccount.toAccount.id,
       finance_type: "",
-      description: "",
+      description: note,
       from_country: selectCountry.fromCountry.id,
       from_amount: calValueFrom,
       to_country: selectCountry.toCountry.id,
@@ -325,12 +328,11 @@ const TransferTransaction = (props) => {
   const [expressionFrom, setExpressionFrom] = useState("");
   const [expressionTo, setExpressionTo] = useState("");
 
-
   return (
     <ZincoModal open={props.open} handleClose={props.handleClose}>
       <div>
         <div className="py-[15px] px-3 bg-[#F6F6F6] rounded-t-[22px]">
-          {toggle ? (
+          {/* {toggle ? (
             <FromCalText value={calValueFrom} setCalvalue={setCalValueFrom}
              expression={expressionFrom}
              setExpression={setExpressionFrom} />
@@ -339,7 +341,24 @@ const TransferTransaction = (props) => {
             expression={expressionTo}
             setExpression={setExpressionTo}
             />
-          )}
+          )} */}
+          <div style={{ display: toggle ? "block" : "none" }}>
+            <FromCalText
+              value={calValueFrom}
+              setCalvalue={setCalValueFrom}
+              expression={expressionFrom}
+              setExpression={setExpressionFrom}
+            />
+          </div>
+
+          <div style={{ display: !toggle ? "block" : "none" }}>
+            <ToCalText
+              value={calValueTo}
+              setCalvalue={setCalValueTo}
+              expression={expressionTo}
+              setExpression={setExpressionTo}
+            />
+          </div>
           <p className="text-[27px] font-[500] text-right">
             {toggle ? calValueFrom || "0.00" : calValueTo || "0.00"}
             <span className="ml-1 text-[15px] font-[400] text-[#6E88A6]">
@@ -621,7 +640,12 @@ const TransferTransaction = (props) => {
           </IconButton>
         </div>
       </div>
-      <NotesModal open={openNote} handleClose={handleCloseNote} />
+      <NotesModal
+        open={openNote}
+        handleClose={handleCloseNote}
+        value={note}
+        changeNote={setNote}
+      />
     </ZincoModal>
   );
 };
@@ -654,6 +678,9 @@ const style = {
 };
 
 function NotesModal(props) {
+  const saveNote = function () {
+    props.value && props.handleClose();
+  };
   return (
     <>
       <Modal
@@ -672,8 +699,10 @@ function NotesModal(props) {
               // cols="25"
               rows="6"
               placeholder="Type here.."
+              value={props.value}
+              onChange={(e) => props.changeNote(e.target.value)}
             ></textarea>
-            <SaveButton>Save</SaveButton>
+            <SaveButton onClick={() => saveNote()}>Save</SaveButton>
             <CancelButton onClick={() => props.handleClose()}>
               Cancel
             </CancelButton>

@@ -1,6 +1,8 @@
 import axios from "axios";
 import { BaseUrl } from "../globalVariable";
-const userData = JSON.parse(localStorage.getItem("UserCredentials"));
+let userData = JSON.parse(localStorage.getItem("UserCredentials"));
+// let { country_details: { id } } = JSON.parse(localStorage.getItem("UserCredentials"));
+// console.log(id,"<======open");
 
 // axios.defaults.baseURL = 'https://www.api.zinco.co.in/api/';
 axios.defaults.baseURL = BaseUrl + "/api/";
@@ -13,8 +15,11 @@ if (userData) {
         data.append("country_id", userData.country_details.id);
         return data;
       } else {
-        data.country_id = userData.country_details.id;
-        return JSON.stringify(data);
+        // console.log(data,"dddddddddddddddddd");
+        if(data){
+          data.country_id = userData.country_details.id;
+          return JSON.stringify(data);
+        }
       }
     },
   ];

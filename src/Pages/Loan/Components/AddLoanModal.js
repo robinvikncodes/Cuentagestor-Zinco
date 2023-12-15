@@ -68,9 +68,15 @@ const AddLoan = (props) => {
 
   const [emiData, setemiData] = useState([{}]);
   const [day, setDay] = useState(1);
-  const [selectAccount, setSelectAccount] = useState({});
+  const [selectAccount, setSelectAccount] = useState({
+    to_account: "",
+    account_name: ""
+  });
   const [accountList, setAccountList] = useState([]);
-  const [selectExpenses, setSelectExpenses] = useState({});
+  const [selectExpenses, setSelectExpenses] = useState({
+    to_account: "",
+    account_name: ""
+  });
   const [expensesList, setExpensesList] = useState([]);
 
   const handleDays = function (event) {
@@ -86,8 +92,13 @@ const AddLoan = (props) => {
     () => listAccount({ account_type: [1, 2], page_number: 1, page_size: 8 }),
     {
       onSuccess: (res) => {
-        // console.log(res);
-        setSelectAccount(res.data[0]);
+        // console.log(res.data[0]);
+        if(props.edit &&  props.loanSingle.is_existing){
+          let account = res.data.filter(item => item.id === props.loanSingle.to_account)
+          setSelectAccount(account[0]);
+        } else {
+          setSelectAccount(res.data[0])
+        }
         setAccountList(res.data);
       },
     }
@@ -99,7 +110,12 @@ const AddLoan = (props) => {
     {
       onSuccess: (res) => {
         // console.log(res);
-        setSelectExpenses(res.data[0]);
+        if (props.edit && props.loanSingle.is_purchase) {
+          let account = res.data.filter(item => item.id === props.loanSingle.to_account)
+          setSelectExpenses(account[0]);
+        } else {
+          setSelectExpenses(res.data[0]);
+        }
         setExpensesList(res.data);
       },
     }
@@ -108,27 +124,27 @@ const AddLoan = (props) => {
   useEffect(() => {
     const updateEMIData = function () {
       let eata = [];
-      let temp = 0;
+      let temp = 1;
 
       for (let i = 0; i < parseInt(submitData.durationMonth) + temp; i++) {
         let newDate = new Date(
-          `${myDate.getFullYear()}-${myDate.getMonth() + 1}-${day + 1}`
+          `${myDate.getFullYear()}-${myDate.getMonth() + 1}-${ day > 8 ? day : day + 1}`
         );
         newDate.setMonth(newDate.getMonth() + i);
 
-        if (
-          myDate.getMonth() === newDate.getMonth() &&
-          day < myDate.getDate()
-        ) {
-          temp = 1;
-          continue;
-        } else {
+        // if (
+        //   myDate.getMonth() === newDate.getMonth() &&
+        //   day < myDate.getDate()
+        // ) {
+        //   temp = 1;
+        //   continue;
+        // } else {
           eata[i - temp] = {
             date: newDate.toJSON().slice(0, 10),
             amount: 0,
             status: false,
           };
-        }
+        // }
       }
       setemiData(eata);
     };
@@ -140,7 +156,7 @@ const AddLoan = (props) => {
     mutationFn: (newTodo) => {
       return props.edit
         ? updateLoans({ ...newTodo })
-        : createLoans({ ...newTodo });
+        : createLoans({ ...newTodo })
     },
     onSuccess: (data) => {
       if (data.StatusCode !== 6000) {
@@ -281,7 +297,7 @@ const AddLoan = (props) => {
   };
 
   useEffect(() => {
-    console.log("Open loan Sammm is hear");
+    console.log("Open loan Sammm is hear", props.loanSingle);
     if (props.edit) {
       setemiData(props.loanSingle.reminder);
       setSubmitData({
@@ -289,11 +305,11 @@ const AddLoan = (props) => {
         loan_name: props.loanSingle.loan_name,
         loan_amount: parseInt(props.loanSingle.loan_amount),
         intrest: parseInt(props.loanSingle.interest),
-        is_intallment: true,
-        is_amount: false,
+        is_intallment: props.loanSingle.duration !== "0",
+        is_amount: props.loanSingle.duration === "0",
         durationMonth: props.loanSingle.duration,
         duration: "",
-        durationDate: new Date(),
+        durationDate: props.loanSingle.payment_date,
         durationDay: "",
         processing_fee: parseInt(props.loanSingle.processing_fee),
         is_IncludeLoan: props.loanSingle.is_fee_include_loan,
@@ -305,6 +321,7 @@ const AddLoan = (props) => {
         customEMI: false,
         emiAmount: "",
       });
+      // setSelectAccount({...selectAccount, id: props.loanSingle.to_account})
 
       console.log(props.loanSingle.reminder);
     } else {
@@ -317,7 +334,7 @@ const AddLoan = (props) => {
         is_amount: false,
         durationMonth: "",
         duration: "",
-        durationDate: new Date(),
+        durationDate: new Date().toJSON().slice(0, 10),
         durationDay: "",
         processing_fee: "",
         is_IncludeLoan: false,
@@ -339,7 +356,7 @@ const AddLoan = (props) => {
     <ZincoModal open={props.open} handleClose={props.handleClose}>
       <div className="pt-[21px] w-[472.5px] ">
         <div className="px-[26px] pb-2 border-b">
-          <p className="text-[16px] font-[400] ">Add a Loan</p>
+          <p className="text-[16px] font-[400] ">{props.edit ? " Edit Loan" :"Add a Loan"}</p>
         </div>
         <div className="px-[16px] h-[75vh] overflow-y-scroll">
           {swap.next ? (
@@ -482,11 +499,11 @@ const AddLoan = (props) => {
                   <input
                     type="date"
                     className="bg-[#F3F7FC] border border-[#D6D6D6] rounded text-[15px] p-2 w-[50%] ml-2"
-                    value={submitData.durationDate.toJSON().slice(0, 10)}
+                    value={submitData.durationDate}
                     onChange={(e) =>
                       setSubmitData({
                         ...submitData,
-                        durationDate: new Date(e.target.value),
+                        durationDate: new Date(e.target.value).toJSON().slice(0, 10),
                       })
                     }
                   />
@@ -714,7 +731,7 @@ const AddLoan = (props) => {
                             className="bg-white flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px] cursor-pointer"
                             style={{
                               backgroundColor:
-                                data.id === selectAccount.id && "#F6F6F6",
+                                data.id === selectAccount?.id && "#F6F6F6",
                             }}
                             onClick={() => setSelectAccount(data)}
                           >
@@ -965,6 +982,18 @@ const AddLoan = (props) => {
             <img src={Icone.ClipIcon} alt="" />
           </IconButton>
 
+          {!submitData.is_Purchase && !submitData.is_ExistingLoan && <div className="flex items-center">
+            <p className="text-[16px] font-[500]">
+              {selectAccount?.account_name}
+            </p>
+          </div>}
+
+          {!submitData.is_ExistingLoan && submitData.is_Purchase && 
+          <div className="flex items-center">
+            <p className="text-[16px] font-[500]">
+              {selectExpenses?.account_name}
+            </p>
+          </div>}
           <div className="flex">
             {swap.prev && (
               <IconButton

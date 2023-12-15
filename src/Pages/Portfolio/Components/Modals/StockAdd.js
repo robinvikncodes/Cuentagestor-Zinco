@@ -32,6 +32,11 @@ const StockAdd = (props) => {
         if (res.StatusCode === 6000) {
           setCandb(res.data);
           !props.edit && setSelect(res.data[0]); // Only set when edit is tru from the prop
+          if (props.edit) {
+            let account = res.data.filter(item => item.id === props.stockData.from_account)
+            setSelect(account[0])
+            // console.log(account, res.data, props.stockData.id, ">>>>>>>>>>>>>><<<<<<<<<<<<<<<<<))(((((()00");
+          }
         }
       },
     }
@@ -105,7 +110,7 @@ const StockAdd = (props) => {
             className="border bg-[#F3F7FC] p-[8px] text-[12px] rounded-md w-1/2 mr-1"
             placeholder="Share %"
             value={values.share}
-            onChange={(e) => setValues({ ...values, share: e.target.value })}
+            onChange={(e) => e.target.value <= 100 && setValues({ ...values, share: e.target.value })}
           />
           <input
             type="number"
@@ -173,7 +178,11 @@ const StockAdd = (props) => {
         <IconButton onClick={() => props.handleClose()}>
           <img src={Icone.ClipIcon} alt="" />
         </IconButton>
-
+        <div className="flex items-center">
+            <p className="text-[16px] font-[500]">
+              {select?.account_name}
+            </p>
+          </div>
         <IconButton onClick={submitTransaction}>
           <img src={Icone.CheckIcon} alt="" />
         </IconButton>

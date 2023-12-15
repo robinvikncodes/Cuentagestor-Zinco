@@ -6,12 +6,13 @@ import { Icone } from "../../../Assets/AssetsLog";
 import TransactionModal from "../../Income/Components/TransactionModal";
 import TransactionModalEx from "../../Expenses/Components/TransactionModal";
 import TransactionList from "../../../Components/TransactionList/TransactionList";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { listFinanceTransaction } from "../../../Api/Finance/FinanceApi";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
 const Transactions = (props) => {
+  const queryClient = useQueryClient()
   const [anchorEl, setAnchorEl] = useState(null);
   const [isEditIncome, setIsEditIncome] = useState(false);
   const [isEditExpenses, setIsEditExpenses] = useState(false);
@@ -25,11 +26,17 @@ const Transactions = (props) => {
   const handleCloseExpenses = () => {
     setOpenExpenses(false);
     setIsEditExpenses(false);
+    queryClient.invalidateQueries(["asset-transationData", props.paramValue])
+    queryClient.invalidateQueries(["show_Asset_data", props.paramValue])
+    queryClient.invalidateQueries(["view_Asset_data", props.paramValue])
   };
   const handleOpenIncome = () => setOpenIncome(true);
   const handleCloseIncome = () => {
     setOpenIncome(false);
     setIsEditIncome(false);
+    queryClient.invalidateQueries(["asset-transationData", props.paramValue])
+    queryClient.invalidateQueries(["show_Asset_data", props.paramValue])
+    queryClient.invalidateQueries(["view_Asset_data", props.paramValue])
   };
   const handleClickPoper = (event) => {
     setAnchorEl(event.currentTarget);

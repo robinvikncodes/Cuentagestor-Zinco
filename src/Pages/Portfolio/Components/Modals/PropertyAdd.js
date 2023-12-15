@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { IconButton } from "@mui/material";
 import { useMutation } from "react-query";
 import ZincoModal from "../../../../Components/Component/ZincoModal";
 import { Icone } from "../../../../Assets/AssetsLog";
-import { addProperty } from "../../../../Api/Assets/AssetsApi";
+import { addProperty, editProperty } from "../../../../Api/Assets/AssetsApi";
 import { openSnackbar } from "../../../../features/snackbar";
 
 const PropertyAdd = (props) => {
@@ -15,7 +15,7 @@ const PropertyAdd = (props) => {
   });
 
   const mutateProterty = useMutation({
-    mutationFn: (newData) => addProperty(newData),
+    mutationFn: (newData) => props.edit ? editProperty(newData) : addProperty(newData),
     onSuccess: (data) => {
       if (data.StatusCode === 6000) {
         dispatch(
@@ -57,8 +57,24 @@ const PropertyAdd = (props) => {
       property_name: data.propertyName,
       property_value: data.value,
     };
+    if(props.edit) payload.property_id = props.propertyData.id
     mutateProterty.mutate(payload);
   };
+
+  useEffect(() => {
+    if (props.edit) {
+      setData({
+        propertyName: props.propertyData.property_name,
+        value: props.propertyData.property_value,
+      })
+    }else{
+      setData({
+        propertyName: "",
+        value: "",
+      })
+    }
+  }, [])
+  
   return (
     <ZincoModal open={props.open} handleClose={props.handleClose}>
       <div className="py-[15px] px-3 w-[450px]">

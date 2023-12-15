@@ -56,6 +56,7 @@ const TransactionModal = (props) => {
   });
   const [toggle, setToggle] = useState(true);
   const [calvalue, setCalvalue] = useState("");
+  const [buttonDisable, setButtonDisable] = useState(true);
   const [openNote, setOpenNote] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [reminderDate, setReminderDate] = React.useState(null);
@@ -188,12 +189,14 @@ const TransactionModal = (props) => {
     }
 
     if (calvalue) {
+      setButtonDisable(false)
       transactionMutate.mutate(payload)
     }
   };
 
   useEffect(() => {
     if (!props.edit) {
+      setButtonDisable(true)
       setCalvalue(0)
       setSubmitData({
         is_interest: false,
@@ -412,7 +415,7 @@ const TransactionModal = (props) => {
               {selected?.candb?.account_name}
             </p>
           </div>
-          <IconButton disabled={!calvalue} onClick={submitTransaction}>
+          <IconButton disabled={buttonDisable && !calvalue} onClick={submitTransaction}>
             <img src={Icone.CheckIcon} alt="" />
           </IconButton>
         </div>

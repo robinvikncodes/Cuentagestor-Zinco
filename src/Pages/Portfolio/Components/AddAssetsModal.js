@@ -44,12 +44,16 @@ const AddAssetsModal = (props) => {
   const queryClient = useQueryClient();
   const [selectedValue, setSelectedValue] = useState("a");
   const [selectedImage, setSelectedImage] = useState([]);
+  const [data, setdata] = useState({
+    data: []
+  })
   // const [imagePayLoad, setimagePayLoad] = useState({})
 
 
   const [assetDetails, setAssetDetails] = useState({
     pre_owned: false,
     from_account: "",
+    from_account_name: '',
     as_on_date: new Date().toJSON().slice(0, 10),
     value: "",
     share: "",
@@ -76,7 +80,7 @@ const AddAssetsModal = (props) => {
   const [assetImage, setAssetImage] = useState([]);
   const [editAssetImages, setEditAssetImages] = useState([])
 
-  // const [age, setAge] = React.useState("");
+  const [selectAccount, setSelectAccount] = useState({})
 
   const clearState = function () {
     setSubmitData({
@@ -104,7 +108,7 @@ const AddAssetsModal = (props) => {
   };
 
   const handleChangeSelect = (event) => {
-    console.log(event.target.value);
+    // console.log(event.target.value);
     setSubmitData({ ...submitData, asset_type: event.target.value });
   };
 
@@ -128,26 +132,31 @@ const AddAssetsModal = (props) => {
     input.click();
   };
 
-  const { isLoading, error, data } = useQuery(
-    "account-list",
-    () => {
-      return listAccount({
-        account_type: [1, 2],
-      }).then((res) => {
-        if (res.StatusCode === 6000) {
-          return res;
-        } else {
-          // throw new Error('Unexpected status code');
-          return [];
-        }
-      });
-    },
+  useQuery(
+    "account-list-assets",
+    () =>  listAccount({ account_type: [1, 2]}),
     {
-      onSuccess: (data) => {
-        setAssetDetails({
-          ...assetDetails,
-          from_account: data.data[0]?.id,
-        });
+      onSuccess: (res) => {
+        // console.log("I am hear *****************************&&&&&&&&&&&&&&&&&&&7777777");
+        setdata(res)
+        if (props.edit === true) {
+          let account = res.data.filter(item => item.id === props.assetData.data.asset_details[0].from_account)
+          // console.log(account, "Hear is the account name");
+          // setSelectAccount(account[0])
+          // console.log( props.assetData.data.asset_details[0],"<==== props.assetData?.data?.asset_details[0]");
+          // console.log(account,"<====account");
+          // console.log(account[0].account_name,"<====account[0].account_name");
+          setAssetDetails(prev => ({
+            ...prev,
+            from_account_name: account[0].account_name,
+          }));
+        }else {
+          setAssetDetails(prev => ({
+            ...prev,
+            from_account: data.data[0]?.id,
+            from_account_name: data.data[0]?.account_name,
+          }));
+        }
       },
     }
   );
@@ -163,7 +172,7 @@ const AddAssetsModal = (props) => {
         dispatch(
           openSnackbar({
             open: true,
-            message: data.message,
+            message: data.message || "Some Error occured",
             severity: "error",
           })
         );
@@ -171,7 +180,7 @@ const AddAssetsModal = (props) => {
         dispatch(
           openSnackbar({
             open: true,
-            message: data.message,
+            message: data.message || data.errors,
             severity: "success",
           })
         );
@@ -213,7 +222,7 @@ const AddAssetsModal = (props) => {
 
   useEffect(() => {
     if (props.edit === true) {
-      console.log(props.assetData.data);
+      // console.log(props.assetData.data);
       setSubmitData({
         asset_name: props.assetData?.data?.asset_name,
         date: props.assetData?.data?.date,
@@ -224,6 +233,7 @@ const AddAssetsModal = (props) => {
       setAssetDetails({
         pre_owned: props.assetData?.data?.asset_details[0]?.pre_owned,
         from_account: props.assetData?.data?.asset_details[0]?.from_account,
+        // from_account_name: props.assetData?.data?.asset_details[0]?.account_name,
         as_on_date: props.assetData?.data?.asset_details[0]?.as_on_date,
         value: parseInt(props.assetData?.data?.asset_details[0]?.value),
         share: parseInt(props.assetData?.data?.asset_details[0]?.share),
@@ -236,9 +246,9 @@ const AddAssetsModal = (props) => {
         pin_code: props.assetData?.data?.address[0]?.pin_code,
       });
       
-      setEditAssetImages(props.assetData?.data?.images)
+      setEditAssetImages(props.assetData?.data.images)
       let fileList = []
-      Promise.all(
+      props.assetData?.data.images && Promise.all(
         props.assetData?.data?.images.map((url, index) =>
           fetch(BaseUrl + url.image)
             .then((response) => response.blob())
@@ -247,7 +257,7 @@ const AddAssetsModal = (props) => {
             })
         )
       ).then(async () => {
-        console.log(assetImage);
+        // console.log(assetImage);
         setAssetImage([...assetImage, ...fileList])
       });
     } else {
@@ -259,7 +269,7 @@ const AddAssetsModal = (props) => {
     <ZincoModal open={props.open} handleClose={props.handleClose}>
       <div className="border-b-[1px]">
         <p className="px-[26px] py-[21px] text-[16px] font-[400]">
-          Add an Asset
+          {props.edit ? "Edit Asset": "Add an Asset"}
         </p>
       </div>
       <div className="px-[26px] py-[21px] w-[450px] h-[75vh] overflow-y-scroll ">
@@ -365,6 +375,7 @@ const AddAssetsModal = (props) => {
         </div>
         <div className="grid grid-cols-2 gap-x-2 mb-2">
           <input
+            min="0" max="100"
             type="number"
             className="border bg-[#F3F7FC] p-[8px] text-[12px] rounded-md"
             placeholder="Share %"
@@ -391,7 +402,7 @@ const AddAssetsModal = (props) => {
           <>
             <p className="text-[17px] font-[500] my-3">Account</p>
             <div className="mt-3 grid grid-cols-3 gap-2">
-              {data?.data.slice(0, 7).map((data, key) => (
+              {data?.data?.slice(0, 7).map((data, key) => (
                 <>
                   <div
                     key={key + 1}
@@ -403,6 +414,7 @@ const AddAssetsModal = (props) => {
                       setAssetDetails({
                         ...assetDetails,
                         from_account: data.id,
+                        from_account_name : data.account_name
                       });
                     }}
                     className="bg-white cursor-pointer flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px] py-4 "
@@ -508,6 +520,12 @@ const AddAssetsModal = (props) => {
         <IconButton onClick={() => props.handleClose()}>
           <img src={Icone.ClipIcon} alt="" />
         </IconButton>
+        {!assetDetails.pre_owned && <div className="flex items-center">
+            <p className="text-[16px] font-[500]">
+              {/* {selectAccount?.account_name} */}
+              {assetDetails.from_account_name}
+            </p>
+        </div>}
         <IconButton
           onClick={() => {
             submitAssets();

@@ -118,6 +118,14 @@ const addProperty = async function (body) {
   return data;
 };
 
+const editProperty = async function (body) {
+  const { data } = await axios.post("v1/assets/edit-property/", {
+    organization,
+    ...body,
+  });
+  return data;
+};
+
 const deleteProperty = async function (body) {
   const { data } = await axios.post("v1/assets/delete-property/", {
     organization,
@@ -165,5 +173,6 @@ export {
   editStock,
   deleteStock,
   deleteProperty,
-  deleteDocument
+  deleteDocument,
+  editProperty
 };

@@ -71,6 +71,8 @@ const Accounts = () => {
     setOpenExpenses(false);
     setIsEditExpenses(false);
     queryClient.invalidateQueries("account-details-dashboard")
+    queryClient.invalidateQueries(["call-account-data", paramValue])
+    queryClient.invalidateQueries(["account-transationData", paramValue])
   };
 
   const [openIncome, setOpenIncome] = React.useState(false);
@@ -79,6 +81,8 @@ const Accounts = () => {
     setOpenIncome(false);
     setIsEditIncome(false);
     queryClient.invalidateQueries("account-details-dashboard")
+    queryClient.invalidateQueries(["call-account-data", paramValue])
+    queryClient.invalidateQueries(["account-transationData", paramValue])
   };
 
   const [openTransfer, setOpenTransfer] = React.useState(false);
@@ -86,6 +90,8 @@ const Accounts = () => {
   const handleCloseTransfer = () => {
     setOpenTransfer(false);
     setIsEditTransfer(false);
+    queryClient.invalidateQueries(["account-transationData", paramValue])
+    queryClient.invalidateQueries(["call-account-data", paramValue])
     queryClient.invalidateQueries(["account-transationData", paramValue])
   };
 

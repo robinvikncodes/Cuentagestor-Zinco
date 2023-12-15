@@ -18,6 +18,7 @@ import { BaseUrl } from "../../globalVariable";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { openSnackbar } from "../../features/snackbar";
 import { useDispatch } from "react-redux";
+import { AmountFormater } from "../../globalFunctions";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
@@ -173,7 +174,7 @@ const Portfolio = () => {
                     <span className=" text-[#9B9B9B] text-[12px] font-[400] mr-1">
                       {userData.country_details.currency_simbol}
                     </span>
-                    {data?.summary?.total_value}
+                    {AmountFormater(data?.summary?.total_value)}
                   </p>
                 </div>
                 <AddButton onClick={() => handleOpen()} />
@@ -258,12 +259,12 @@ const Portfolio = () => {
           </div>
         )}
       </div>
-      <AddAssetsModal
+      {open && <AddAssetsModal
         open={open}
         edit={edit}
         assetData={assetDetails}
         handleClose={handleClose}
-      />
+      />}
     </>
   );
 };

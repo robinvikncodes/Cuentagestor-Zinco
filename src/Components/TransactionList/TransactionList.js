@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Icone } from "../../Assets/AssetsLog";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { IconButton } from "@mui/material";
@@ -7,12 +7,15 @@ import { deleteTransaction } from "../../Api/Finance/FinanceApi";
 import { openSnackbar } from "../../features/snackbar";
 import { useDispatch } from "react-redux";
 import { AmountFormater } from "../../globalFunctions";
+import { deleteTransfer } from "../../Api/Transfer/TransferApi";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
 const TransactionList = (props) => {
+  let switchDel = true
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
+  // const [switchDelete, setSwitchDelete] = useState(true)
 
   const returnLogo = function (type) {
     switch (type) {
@@ -158,7 +161,7 @@ const TransactionList = (props) => {
   };
 
   const deleteTsaction = useMutation({
-    mutationFn: (newData) => deleteTransaction({ ...newData }),
+    mutationFn: (newData) => switchDel ? deleteTransaction({ ...newData }) : deleteTransfer({ ...newData}),
     onSuccess: (data) => {
       if (data.StatusCode === 6000) {
         dispatch(
@@ -188,7 +191,12 @@ const TransactionList = (props) => {
     },
   });
 
-  const deleteTransation = function (id) {
+  const deleteTransation = function (id, type) {
+    if (type === "TEX" || type === "TIC") {
+      switchDel = false
+    } else {
+      switchDel = true
+    }
     deleteTsaction.mutate({ id });
   };
 
@@ -265,7 +273,7 @@ const TransactionList = (props) => {
                     bgcolor: "#CD0A0A",
                   },
                 }}
-                onClick={() => deleteTransation(data.id)}
+                onClick={() => deleteTransation(data.id, data.voucher_type)}
               >
                 <DeleteIcon sx={{ fontSize: "18px" }} />
               </IconButton>}

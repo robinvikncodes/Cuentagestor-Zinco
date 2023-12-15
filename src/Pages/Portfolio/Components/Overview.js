@@ -28,7 +28,7 @@ const Overview = (props) => {
 
   // props.assetData(data => {
   // })
-  console.log(props.assetData);
+  // console.log(props.assetData);
   return (
     <div>
       <div className="flex justify-between items-center px-5 pb-2 border-b-[1px] border-[#DEDEDE]">
@@ -93,9 +93,9 @@ const Overview = (props) => {
 
 
 const ManinOverview = function (props) {
-  console.log(props.assetDetail);
+  // console.log(props.assetDetail);
   return (
-    <>
+    <div className="h-[76vh] overflow-y-scroll">
       <div className=" grid grid-cols-3 px-[20px] gap-x-2 mb-5 mt-[10px]">
         <div className="w-full bg-white rounded-[9px] border-[#E4E4E4] border-[1px] flex justify-between items-center p-[16px] ">
           <div className="flex justify-center items-center">
@@ -230,20 +230,22 @@ const ManinOverview = function (props) {
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
 const InfoOverview = function ({ assetDetail }) {
-  console.log(assetDetail);
+  // console.log(assetDetail);
   let file;
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   const [openStock, setOpenStock] = useState(false);
   const [editStock, setEditStock] = useState(false);
+  const [editProperty, seteditProperty] = useState(false)
   const [openProperty, setOpenProperty] = useState(false);
   const [addressDetail, setAddressDetail] = useState([]);
   const [selectStockData, setSelectStockData] = useState({});
+  const [selectPropertyData, setSelectPropertyData] = useState({})
 
   const handleCloseStock = () => {
     setOpenStock(false);
@@ -253,20 +255,17 @@ const InfoOverview = function ({ assetDetail }) {
     setOpenProperty(false);
     queryClient.invalidateQueries(["show_Asset_data", assetDetail.data.id]);
   };
+
   const addFile = () => {
     const input = document.getElementById("fileInput");
     input.click();
   };
-
+  
   const handleFileChange = function (e) {
-    file = e.target.files[0];
-    if (file) {
-      let payload = {
-        documents: file,
-        asset_master_id: assetDetail.data.id,
-      };
-
-      fileUpload.mutate(payload);
+    // console.log("I am input field I am clicked 🚀🚀🚀🚀🚀");
+    let file = e.target.files[0];
+    if(file){
+      fileUpload.mutate({documents: file, asset_master_id: assetDetail.data.id})
     }
   };
 
@@ -280,6 +279,12 @@ const InfoOverview = function ({ assetDetail }) {
     stockDeleteMutate.mutate({ asset_detail_id: id });
   };
 
+  const handleEditProperty = function (i) {
+    // Snackbar(open, handleCloseSnack)
+    setSelectPropertyData(i);
+    seteditProperty(true);
+    setOpenProperty(true);
+  };
   const handleDeleteProperty = function (id) {
     propertyDeleteMutate.mutate({ property_id: id });
   };
@@ -310,7 +315,7 @@ const InfoOverview = function ({ assetDetail }) {
       }
     },
     onError: (data) => {
-      console.log(data);
+      // console.log(data);
       dispatch(
         openSnackbar({
           open: true,
@@ -394,6 +399,7 @@ const InfoOverview = function ({ assetDetail }) {
   });
 
   useEffect(() => {
+    // console.log(assetDetail.data.address,"eror 11111111111");
     assetDetail.data.address.map((data, key) =>
       setAddressDetail([
         {
@@ -455,7 +461,7 @@ const InfoOverview = function ({ assetDetail }) {
                     setAddressDetail(newAddressDetail);
                   }}
                   onBlur={() => {
-                    console.log(addressDetail);
+                    // console.log(addressDetail);
                   }}
                 />
               </div>
@@ -476,7 +482,7 @@ const InfoOverview = function ({ assetDetail }) {
                     setAddressDetail(newAddressDetail);
                   }}
                   onBlur={() => {
-                    console.log(addressDetail);
+                    // console.log(addressDetail);
                   }}
                 />
               </div>
@@ -495,7 +501,7 @@ const InfoOverview = function ({ assetDetail }) {
                     setAddressDetail(newAddressDetail);
                   }}
                   onBlur={() => {
-                    console.log(addressDetail);
+                    // console.log(addressDetail);
                   }}
                 />
               </div>
@@ -516,7 +522,7 @@ const InfoOverview = function ({ assetDetail }) {
                     setAddressDetail(newAddressDetail);
                   }}
                   onBlur={() => {
-                    console.log(addressDetail);
+                    // console.log(addressDetail);
                   }}
                 />
               </div>
@@ -554,7 +560,7 @@ const InfoOverview = function ({ assetDetail }) {
                     setAddressDetail(newAddressDetail);
                   }}
                   onBlur={() => {
-                    console.log(addressDetail);
+                    // console.log(addressDetail);
                   }}
                 />
               </div>
@@ -590,7 +596,7 @@ const InfoOverview = function ({ assetDetail }) {
                 <div
                   className="flex"
                   style={{ cursor: i !== 0 ? "pointer" : "auto" }}
-                  onClick={() => handleEditstock(data)}
+                  onClick={() => i !== 0 && handleEditstock(data)}
                 >
                   <div className="rounded-full bg-[#F3F7FC] p-2 mr-6 w-9 h-9">
                     <p className=" mx-auto text-center">{i + 1}</p>
@@ -665,7 +671,8 @@ const InfoOverview = function ({ assetDetail }) {
             assetDetail.data.custom_properties.map((data) => (
               <div
                 key={data.id}
-                className="bg-white px-9 py-4 border-[1px] flex items-center justify-between"
+                className="bg-white px-9 py-4 border-[1px] flex items-center justify-between cursor-pointer"
+                onClick={() => handleEditProperty(data)}
               >
                 <div className="flex justify-between w-[300px]">
                   <p className="text-[14px] font-[400] text-[#785ED7]">
@@ -708,7 +715,7 @@ const InfoOverview = function ({ assetDetail }) {
                 type="file"
                 name="files"
                 id="fileInput"
-                onClick={handleFileChange}
+                onChange={handleFileChange}
               />
             </div>
           </div>
@@ -764,6 +771,8 @@ const InfoOverview = function ({ assetDetail }) {
       {openProperty && (
         <PropertyAdd
           open={openProperty}
+          edit={editProperty}
+          propertyData={selectPropertyData}
           account={assetDetail.data.id}
           handleClose={handleCloseProperty}
         />
