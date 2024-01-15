@@ -4,24 +4,23 @@ import {
   Button,
   FormControl,
   IconButton,
-  InputLabel,
   MenuItem,
   Select,
-  TextField,
 } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
 import { Icone } from "../../../Assets/AssetsLog";
 import ZincoModal from "../../../Components/Component/ZincoModal";
 import SearchField from "../../../Components/Component/SearchField";
-import { Mutation, useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { listAccount } from "../../../Api/Accounts/AccountsApi";
 import { openSnackbar } from "../../../features/snackbar";
 import { useDispatch } from "react-redux";
 import {
   createLoans,
-  detailLoans,
   updateLoans,
 } from "../../../Api/Loan/LoanApi";
+import { AmountFormater } from "../../../globalFunctions";
+import moment from "moment";
 
 const myDate = new Date();
 
@@ -66,7 +65,7 @@ const AddLoan = (props) => {
     emiAmount: "",
   });
 
-  const [emiData, setemiData] = useState([{}]);
+  const [emiData, setemiData] = useState([]);
   const [day, setDay] = useState(1);
   const [selectAccount, setSelectAccount] = useState({
     to_account: "",
@@ -93,7 +92,7 @@ const AddLoan = (props) => {
     {
       onSuccess: (res) => {
         // console.log(res.data[0]);
-        if(props.edit &&  props.loanSingle.is_existing){
+        if(props.edit &&  !submitData.is_Purchase && !submitData.is_ExistingLoan){
           let account = res.data.filter(item => item.id === props.loanSingle.to_account)
           setSelectAccount(account[0]);
         } else {
@@ -110,7 +109,7 @@ const AddLoan = (props) => {
     {
       onSuccess: (res) => {
         // console.log(res);
-        if (props.edit && props.loanSingle.is_purchase) {
+        if (props.edit && !submitData.is_ExistingLoan && submitData.is_Purchase) {
           let account = res.data.filter(item => item.id === props.loanSingle.to_account)
           setSelectExpenses(account[0]);
         } else {
@@ -191,27 +190,27 @@ const AddLoan = (props) => {
       newReqiredField.name = true;
     }
 
-    if (submitData.loan_amount === "") {
+    if (submitData.loan_amount === "" || submitData.loan_amount <= 0) {
       newReqiredField.amount = true;
     }
 
-    if (submitData.intrest === "") {
+    if (submitData.intrest === "" || submitData.intrest <= 0) {
       newReqiredField.intrest = true;
     }
 
-    if (!submitData.is_amount && submitData.durationMonth === "") {
+    if (!submitData.is_amount && (submitData.durationMonth === "" || submitData.durationMonth <=  0)) {
       newReqiredField.dueMonth = true;
     }
-    console.log(reqiredField.downPayment,"ttttttt---->" )
+    // console.log(reqiredField.downPayment,"ttttttt---->" )
 
-    console.log(submitData.down_payment,"is_PurchaseVal===>");
+    // console.log(submitData.down_payment,"is_PurchaseVal===>");
     if (submitData.is_Purchase && submitData?.down_payment === "")  {
-      console.log(submitData.down_payment,"111111222222is_PurchaseVal===>");
+      // console.log(submitData.down_payment,"111111222222is_PurchaseVal===>");
 
       newReqiredField.downPayment = true;
       is_PurchaseVal=true
     }
-
+    // console.log(newReqiredField, " new data field 👍👍👍 👍👍👍");
     setReqiredField(newReqiredField);
     // const totalAmount = emiData.reduce((total, count) => {
     //   console.log(total, count.amount);
@@ -226,12 +225,13 @@ const AddLoan = (props) => {
       !is_PurchaseVal
     ) {
       if (whichButton === "submit") {
-        let totalAmount = emiData.reduce(function (total, item) {
-          return total + parseInt(item.amount);
-        }, 0);
 
-        console.log(totalAmount);
+
+        // console.log(totalAmount);
         if (!submitData.is_amount) {
+          let totalAmount = emiData.reduce(function (total, item) {
+            return total + parseInt(item.amount);
+          }, 0);
           if (totalAmount >= submitData.loan_amount) {
             submitLoan();
           } else {
@@ -259,9 +259,7 @@ const AddLoan = (props) => {
       payment_type: submitData.is_intallment ? 0 : 1, //:0=EMI, 1=Pay to amt
       loan_amount: submitData.loan_amount || 0,
       interest: submitData.intrest || 0,
-      payment_date: `${submitData.durationDate.getFullYear()}-${
-        submitData.durationDate.getMonth() + 1
-      }-${submitData.durationDate.getDate()}`,
+      payment_date: submitData.durationDate,
       processing_fee: submitData.processing_fee || 0,
       is_fee_include_loan: submitData.is_IncludeLoan,
       is_fee_include_emi: submitData.is_includeEMI,
@@ -274,6 +272,9 @@ const AddLoan = (props) => {
       emi_data: emiData, //[{'date':'2023-05-06','amount':1560,'status':True}]
     };
 
+    if (props?.loanSingle?.duration === "0") {
+      payload.emi_data = []
+    }
     if (submitData.is_intallment && !submitData.is_Purchase) {
       payload.to_account = selectAccount.id;
       payload.duration = submitData.durationMonth;
@@ -300,17 +301,18 @@ const AddLoan = (props) => {
     console.log("Open loan Sammm is hear", props.loanSingle);
     if (props.edit) {
       setemiData(props.loanSingle.reminder);
+      setDay(props.loanSingle.duration !== "0" ? moment(props.loanSingle.reminder[0].date).date() : "")
       setSubmitData({
         loanDate: props.loanSingle.date,
         loan_name: props.loanSingle.loan_name,
-        loan_amount: parseInt(props.loanSingle.loan_amount),
+        loan_amount: AmountFormater(props.loanSingle.loan_amount),
         intrest: parseInt(props.loanSingle.interest),
         is_intallment: props.loanSingle.duration !== "0",
         is_amount: props.loanSingle.duration === "0",
         durationMonth: props.loanSingle.duration,
         duration: "",
         durationDate: props.loanSingle.payment_date,
-        durationDay: "",
+        durationDay: props.loanSingle.duration !== "0" ? moment(props.loanSingle.reminder[0].date).date() : "",
         processing_fee: parseInt(props.loanSingle.processing_fee),
         is_IncludeLoan: props.loanSingle.is_fee_include_loan,
         is_includeEMI: props.loanSingle.is_fee_include_emi,
@@ -321,9 +323,10 @@ const AddLoan = (props) => {
         customEMI: false,
         emiAmount: "",
       });
-      // setSelectAccount({...selectAccount, id: props.loanSingle.to_account})
+      // !submitData.is_Purchase && !submitData.is_ExistingLoan && setSelectAccount({...selectAccount, id: props.loanSingle.to_account})
+      // !submitData.is_ExistingLoan && submitData.is_Purchase && setSelectAccount({...selectAccount, id: props.loanSingle.to_account})
 
-      console.log(props.loanSingle.reminder);
+      // console.log(props.loanSingle.reminder);
     } else {
       setSubmitData({
         loanDate: new Date().toJSON().slice(0, 10),
@@ -407,7 +410,7 @@ const AddLoan = (props) => {
                     onChange={(e) => {
                       setSubmitData({
                         ...submitData,
-                        loan_amount: e.target.value,
+                        loan_amount: e.target.value >= 0 ? e.target.value : submitData.loan_amount,
                       });
                       setReqiredField({
                         ...reqiredField,
@@ -426,7 +429,7 @@ const AddLoan = (props) => {
                 <div className="w-1/2">
                   <input
                     type="number"
-                    placeholder="Interest%"
+                    placeholder="Interest %"
                     required={true}
                     min="1"
                     max="100"
@@ -434,7 +437,7 @@ const AddLoan = (props) => {
                     onChange={(e) => {
                       setSubmitData({
                         ...submitData,
-                        intrest: e.target.value,
+                        intrest: e.target.value >= 0 ? e.target.value : submitData.intrest,
                       });
                       setReqiredField({
                         ...reqiredField,
@@ -520,7 +523,7 @@ const AddLoan = (props) => {
                       onChange={(e) => {
                         setSubmitData({
                           ...submitData,
-                          durationMonth: e.target.value,
+                          durationMonth: e.target.value >= 0 ? e.target.value :submitData.durationMonth,
                         });
                         setReqiredField({
                           ...reqiredField,
@@ -530,7 +533,7 @@ const AddLoan = (props) => {
                     />
                     {reqiredField.dueMonth && (
                       <label className="text-[10px] w-full text-red-500">
-                        * Loan amount is required
+                        * Duration Months is required
                       </label>
                     )}
                   </div>
@@ -767,7 +770,7 @@ const AddLoan = (props) => {
 
                             <p className="text-[10px] font-[400]">
                               {userData.country_details.currency_simbol}
-                              {"  "} {data.balance}
+                              {"  "} {AmountFormater(data.balance)}
                             </p>
                           </div>
                         ))
@@ -798,7 +801,7 @@ const AddLoan = (props) => {
 
                             <p className="text-[10px] font-[400]">
                               {userData.country_details.currency_simbol}
-                              {"  "} {data.balance}
+                              {"  "} {AmountFormater(data.balance)}
                             </p>
                           </div>
                         ))}

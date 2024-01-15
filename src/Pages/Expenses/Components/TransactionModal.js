@@ -13,13 +13,17 @@ import {
   Tabs,
   styled,
 } from "@mui/material";
-import CircleIcon from '@mui/icons-material/Circle';
+import CircleIcon from "@mui/icons-material/Circle";
 import { Icone } from "../../../Assets/AssetsLog";
 import SearchField from "../../../Components/Component/SearchField";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { listAccount } from "../../../Api/Accounts/AccountsApi";
 import { MenuItem } from "@mui/base";
-import { createListTransaction, detailFinance, updateListTransaction } from "../../../Api/Finance/FinanceApi";
+import {
+  createListTransaction,
+  detailFinance,
+  updateListTransaction,
+} from "../../../Api/Finance/FinanceApi";
 import TextFieldCalculator from "../../../Components/TextFieldCalculator/TextFieldCalculator";
 import { openSnackbar } from "../../../features/snackbar";
 import { useDispatch, useSelector } from "react-redux";
@@ -33,14 +37,14 @@ const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 const TransactionModal = (props) => {
   let now = new Date();
   const queryClient = useQueryClient();
-  const reducer = useSelector(state => state.setting.settingDetails )
+  const reducer = useSelector((state) => state.setting.settingDetails);
+  const dispatch = useDispatch();
 
   //States
-  const dispatch = useDispatch()
   const [value, setValue] = useState(0);
-  const [calvalue, setCalvalue] = useState('')
+  const [calvalue, setCalvalue] = useState("");
   const [date, setDate] = useState(new Date().toISOString().substr(0, 10));
-  const [noteText, setNoteText] = useState("")
+  const [noteText, setNoteText] = useState("");
   const [reminderDate, setReminderDate] = React.useState(null);
   const [transaction, setTransaction] = useState({
     candb: [],
@@ -51,7 +55,7 @@ const TransactionModal = (props) => {
     expenses: { id: "" },
   });
   const [toggle, setToggle] = useState(true);
-
+  const [buttonDisable, setButtonDisable] = useState(true);
   const [openNote, setOpenNote] = useState(false);
   const [openReminder, setOpenReminder] = useState(false);
   const [submitData, setSubmitData] = useState({
@@ -77,42 +81,43 @@ const TransactionModal = (props) => {
   };
 
   //Data fetching
-  const {isLoading: isLoadingCandB } = useQuery(
-    "cash&bank_list", 
-    () => listAccount({ account_type: [1, 2] }), 
+  const { isLoading: isLoadingCandB } = useQuery(
+    "cashandbank_list",
+    () => listAccount({ account_type: [1, 2] }),
     {
-      onSuccess: res => {
-        if(res.StatusCode === 6000){
-          setTransaction({...transaction, candb: res.data });
+      onSuccess: (res) => {
+        if (res.StatusCode === 6000) {
+          setTransaction(prev => ({ ...prev, candb: res.data }));
           !props.edit && setSelected({ ...selected, candb: res.data[0] }); // Only set when edit is tru from the prop
-        }
-      }
-    }
-  )
-
-  const {isLoading: isLoadingExpenses } = useQuery(
-    "expenses_list", 
-    () => listAccount({ account_type: [4] }), 
-    {
-      onSuccess: res => {
-        if(res.StatusCode === 6000){
-          setTransaction(prev =>  ({...prev, expenses: res.data}))
-          !props.edit && setSelected(prev => ({ ...prev, expenses: res.data[0] }));
         }
       },
     }
-  )
+  );
+
+  const { isLoading: isLoadingExpenses } = useQuery(
+    "expenses_list",
+    () => listAccount({ account_type: [4] }),
+    {
+      onSuccess: (res) => {
+        if (res.StatusCode === 6000) {
+          setTransaction((prev) => ({ ...prev, expenses: res.data }));
+          !props.edit &&
+            setSelected((prev) => ({ ...prev, expenses: res.data[0] }));
+        }
+      },
+    }
+  );
 
   useQuery(
     "detail-transaction-expenses",
     () => {
       return detailFinance({
-        id: props.transID
+        id: props.transID,
       });
     },
-    { 
+    {
       enabled: props.edit,
-      onSuccess: data => {
+      onSuccess: (data) => {
         if (data.StatusCode === 6000) {
           setSubmitData({
             ...submitData,
@@ -120,16 +125,16 @@ const TransactionModal = (props) => {
             is_interest: data.data.is_interest,
             is_zakath: data.data.is_zakath,
             // reminder_date: data.datat.is_reminder
-          })
-          
+          });
+          setNoteText( data.data.description)
           setCalvalue(parseFloat(data.data.amount).toFixed(2));
           setDate(data.data.date);
           setSelected({
             candb: data.data.from_account,
-            expenses: data.data.to_account
-          })
+            expenses: data.data.to_account,
+          });
         }
-      }
+      },
     }
   );
 
@@ -181,29 +186,36 @@ const TransactionModal = (props) => {
 
   const transactionMutate = useMutation({
     mutationFn: (newTodo) => {
-      return props.edit ? updateListTransaction({ ...newTodo }) : createListTransaction({ ...newTodo })
+      return props.edit
+        ? updateListTransaction({ ...newTodo })
+        : createListTransaction({ ...newTodo });
     },
     onSuccess: (data) => {
       if (data.StatusCode !== 6000) {
-        dispatch(openSnackbar({
-          open: true,
-          message: "some error occured",
-          severity: "error"
-        }));
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: "some error occured",
+            severity: "error",
+          })
+        );
       } else {
-        dispatch(openSnackbar({
-          open: true,
-          message: data.data,
-          severity: "success"
-        }));
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: data.data,
+            severity: "success",
+          })
+        );
         queryClient.invalidateQueries("Expenses-list");
-        props.handleClose()
+        queryClient.invalidateQueries("details-dashboard")
+        props.handleClose();
       }
     },
   });
 
   const submitTransaction = function () {
-    let payload = { 
+    let payload = {
       is_interest: submitData.is_interest,
       is_zakath: submitData.is_zakath,
       date: date,
@@ -216,34 +228,43 @@ const TransactionModal = (props) => {
       asset_master_id: props.asset_master_id || 0,
       is_asset: props.is_asset || false,
       is_reminder: false,
-      reminder_date: new Date().toISOString().substr(0, 10)
-    }
+      reminder_date: new Date().toISOString().substr(0, 10),
+    };
 
-    if(reminderDate) {
-      payload.reminder_date = reminderDate.format('YYYY-MM-DD'); 
-      payload.is_reminder = true
+    if (reminderDate) {
+      payload.reminder_date = reminderDate.format("YYYY-MM-DD");
+      payload.is_reminder = true;
     }
 
     if (props.edit) {
-      payload.id = props.transID 
+      payload.id = props.transID;
     }
 
-    if (calvalue) {
-      transactionMutate.mutate(payload)
+     if (calvalue <= 0) {
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: "Amount must be grater than 0",
+          severity: "error",
+        })
+      );
+    }else if (calvalue) {
+      setButtonDisable(false)
+      transactionMutate.mutate(payload);
     }
-
   };
 
   console.log(transaction);
   useEffect(() => {
     if (!props.edit) {
-      setCalvalue(0)
+      setButtonDisable(true)
+      setCalvalue(0);
       setSubmitData({
         is_interest: false,
         is_zakath: false,
         description: "",
         reminder_date: "",
-      })
+      });
     }
   }, []);
 
@@ -264,9 +285,10 @@ const TransactionModal = (props) => {
           /> */}
           <TextFieldCalculator setCalvalue={setCalvalue} />
           <p className="text-[27px] font-[500] text-right">
-            { calvalue || "0.00" }
+            {calvalue || "0.00"}
             <span className="ml-1 text-[15px] font-[400] text-[#6E88A6]">
-            {userData.country_details.currency_simbol}{"  "}
+              {userData.country_details.currency_simbol}
+              {"  "}
             </span>
           </p>
         </div>
@@ -323,9 +345,9 @@ const TransactionModal = (props) => {
             </ToggleButton>
           </div> */}
           <div className=" w-[472.5px] h-[244px] overflow-y-auto">
-          <div className="mt-3 grid grid-cols-4 grid-rows-2 gap-2">
-            <>
-              {/* <div className="bg-white flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px] ">
+            <div className="mt-3 grid grid-cols-4 grid-rows-2 gap-2">
+              <>
+                {/* <div className="bg-white flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px] ">
                     <div className="w-[44px] h-[3px] bg-[#D9D9D9] rounded-[20px] mb-3"></div>
                     <p className="text-[#15960A] text-[10px] font-[400]">
                       Wallet Name
@@ -335,46 +357,54 @@ const TransactionModal = (props) => {
                     </div>
                     <p className="text-[10px] font-[400]">SAR 400,00,000,00</p>
               </div> */}
-              {toggle
-                ? !isLoadingCandB ? transaction.candb.slice(0, 7).map((data, key) => (
-                    <div
-                      style={{
-                        backgroundColor:
-                          data.id === selected.candb.id && "#F6F6F6",
-                      }}
-                      onClick={() => setSelected({ ...selected, candb: data })}
-                      className="bg-white  flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px] py-4 cursor-pointer"
-                    >
-                      {/* <div className="w-[44px] h-[3px] bg-[#D9D9D9] rounded-[20px] mb-3"></div> */}
-                      {data.account_type === "2" ? (
-                    <>
-                      <p className="text-[#0150B1] text-[10px] font-[400]">
-                        {data.account_name}
-                      </p>
-                      <div className="bg-[#E2EFFF] p-[10px] rounded-[13px] my-[5px] inline-block">
-                        <img src={Icone.BankIcon} alt="" className="" />
+                {toggle ? (
+                  !isLoadingCandB ? (
+                    transaction.candb.slice(0, 7).map((data, key) => (
+                      <div
+                        style={{
+                          backgroundColor:
+                            data.id === selected.candb.id && "#F6F6F6",
+                        }}
+                        onClick={() =>
+                          setSelected({ ...selected, candb: data })
+                        }
+                        className="bg-white  flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px] py-4 cursor-pointer"
+                      >
+                        {/* <div className="w-[44px] h-[3px] bg-[#D9D9D9] rounded-[20px] mb-3"></div> */}
+                        {data.account_type === "2" ? (
+                          <>
+                            <p className="text-[#0150B1] text-[10px] font-[400]">
+                              {data.account_name}
+                            </p>
+                            <div className="bg-[#E2EFFF] p-[10px] rounded-[13px] my-[5px] inline-block">
+                              <img src={Icone.BankIcon} alt="" className="" />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-[#289c20] text-[10px] font-[400]">
+                              {data.account_name}
+                            </p>
+                            <div className="bg-[#F1FFF0] p-[10px] rounded-[13px] my-[5px] inline-block">
+                              <img
+                                src={Icone.WalletGreenIcon}
+                                alt=""
+                                className=""
+                              />
+                            </div>
+                          </>
+                        )}
+                        <p className="text-[10px] font-[400]">
+                          {userData.country_details.currency_simbol}
+                          {"  "} {AmountFormater(data.balance)}
+                        </p>
                       </div>
-                    </>
+                    ))
                   ) : (
-                    <>
-                      <p className="text-[#289c20] text-[10px] font-[400]">
-                        {data.account_name}
-                      </p>
-                      <div className="bg-[#F1FFF0] p-[10px] rounded-[13px] my-[5px] inline-block">
-                        <img
-                          src={Icone.WalletGreenIcon}
-                          alt=""
-                          className=""
-                        />
-                      </div>
-                    </>
-                  )}
-                      <p className="text-[10px] font-[400]">
-                      {userData.country_details.currency_simbol}{"  "} {AmountFormater(data.balance)}
-                      </p>
-                    </div>
-                  )) : <SkletionCard/>
-                : !isLoadingExpenses ? transaction.expenses.map((data, key) => (
+                    <SkletionCard />
+                  )
+                ) : !isLoadingExpenses ? (
+                  transaction.expenses.map((data, key) => (
                     <div
                       key={key + 1}
                       className="bg-white flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px] cursor-pointer"
@@ -394,13 +424,16 @@ const TransactionModal = (props) => {
                         <img src={Icone.WalletAdd1Icon} alt="" className="" />
                       </div>
                       <p className=" text-[10px] font-[400]">
-                      {userData.country_details.currency_simbol}{"  "} {AmountFormater(data.balance)}
+                        {userData.country_details.currency_simbol}
+                        {"  "} {AmountFormater(data.balance)}
                       </p>
                     </div>
-                  )) : <SkletionCard />
-                }
-            </>
-          </div>
+                  ))
+                ) : (
+                  <SkletionCard />
+                )}
+              </>
+            </div>
           </div>
 
           <div className="w-full flex justify-center py-3">
@@ -414,44 +447,46 @@ const TransactionModal = (props) => {
         </div>
 
         <div className="flex justify-between">
-          {reducer.is_interest &&  <StyledButton
-            onClick={() =>
-              setSubmitData({
-                ...submitData,
-                is_interest: !submitData.is_interest,
-                is_zakath: false,
-              })
-            }
-            startIcon={
-              submitData.is_interest ? 
-              <img
-                src={Icone.CheckFillIcon}
-                alt=""
-              /> :
-              <CircleIcon sx={{ color: "#999999", fontSize: "25px" }} />
-            }
-          >
-            Use Interest
-          </StyledButton>}
-          {reducer.is_zakath && <StyledButton
-            onClick={() =>
-              setSubmitData({
-                ...submitData,
-                is_zakath: !submitData.is_zakath,
-                is_interest: false,
-              })
-            }
-            startIcon={
-              submitData.is_zakath ? 
-              <img
-                src={Icone.CheckFillIcon}
-                alt=""
-              /> :
-              <CircleIcon sx={{ color: "#999999", fontSize: "25px" }} />
-            }
-          >
-            Use Zakah
-          </StyledButton>}
+          {reducer.is_interest && (
+            <StyledButton
+              onClick={() =>
+                setSubmitData({
+                  ...submitData,
+                  is_interest: !submitData.is_interest,
+                  is_zakath: false,
+                })
+              }
+              startIcon={
+                submitData.is_interest ? (
+                  <img src={Icone.CheckFillIcon} alt="" />
+                ) : (
+                  <CircleIcon sx={{ color: "#999999", fontSize: "25px" }} />
+                )
+              }
+            >
+              Use Interest
+            </StyledButton>
+          )}
+          {reducer.is_zakath && (
+            <StyledButton
+              onClick={() =>
+                setSubmitData({
+                  ...submitData,
+                  is_zakath: !submitData.is_zakath,
+                  is_interest: false,
+                })
+              }
+              startIcon={
+                submitData.is_zakath ? (
+                  <img src={Icone.CheckFillIcon} alt="" />
+                ) : (
+                  <CircleIcon sx={{ color: "#999999", fontSize: "25px" }} />
+                )
+              }
+            >
+              Use Zakah
+            </StyledButton>
+          )}
         </div>
         <div className="flex justify-between">
           <StyledButton
@@ -481,15 +516,25 @@ const TransactionModal = (props) => {
               {selected?.expenses?.account_name}
             </p>
           </div>
-          <IconButton disabled={!calvalue} onClick={submitTransaction}>
+          <IconButton disabled={buttonDisable && !calvalue} onClick={submitTransaction}>
             <img src={Icone.CheckIcon} alt="" />
           </IconButton>
         </div>
         {/* <div className="h-5"></div> */}
       </div>
 
-      <NotesModal open={openNote} handleClose={handleCloseNote}  noteText={noteText} setNoteText={setNoteText} />
-      <ReminderModal open={openReminder} handleClose={handleCloseReminder} value={reminderDate} setValue={setReminderDate} />
+      <NotesModal
+        open={openNote}
+        handleClose={handleCloseNote}
+        noteText={noteText}
+        setNoteText={setNoteText}
+      />
+      <ReminderModal
+        open={openReminder}
+        handleClose={handleCloseReminder}
+        value={reminderDate}
+        setValue={setReminderDate}
+      />
     </ZincoModal>
   );
 };
@@ -540,9 +585,9 @@ const style = {
 };
 
 function NotesModal(props) {
-  const saveNote = function() {
-    props.noteText && props.handleClose()
-  }
+  const saveNote = function () {
+    props.noteText && props.handleClose();
+  };
 
   return (
     <>
@@ -568,7 +613,7 @@ function NotesModal(props) {
               // cols="25"
               rows="6"
               value={props.noteText}
-              onChange={e => props.setNoteText(e.target.value)}
+              onChange={(e) => props.setNoteText(e.target.value)}
               placeholder="Type here.."
             ></textarea>
             <SaveButton onClick={() => saveNote()}>Save</SaveButton>
@@ -583,10 +628,10 @@ function NotesModal(props) {
 }
 
 function ReminderModal(props) {
-  const SaveReminder = function() {
+  const SaveReminder = function () {
     // console.log(value);
-    props.value && props.handleClose()
-  }
+    props.value && props.handleClose();
+  };
 
   return (
     <>
@@ -601,17 +646,17 @@ function ReminderModal(props) {
           <div className="w-[320px]">
             <p className="text-[16px] font-[400] mb-3">Set a reminder</p>
             <div>
-            <LocalizationProvider dateAdapter={AdapterMoment}>
+              <LocalizationProvider dateAdapter={AdapterMoment}>
                 <DateCalendar
-                disablePast
-                inputFormat="yyyy-MM-dd"
+                  disablePast
+                  inputFormat="yyyy-MM-dd"
                   value={props.value}
                   onChange={(newValue) => props.setValue(newValue)}
                 />
               </LocalizationProvider>
             </div>
             <div className="flex"></div>
-            <SaveButton onClick={() => SaveReminder() } >Save</SaveButton>
+            <SaveButton onClick={() => SaveReminder()}>Save</SaveButton>
             <CancelButton onClick={() => props.handleClose()}>
               Cancel
             </CancelButton>
@@ -668,4 +713,3 @@ const StyledSelect = styled(Select)({
     borderColor: "black",
   },
 });
-

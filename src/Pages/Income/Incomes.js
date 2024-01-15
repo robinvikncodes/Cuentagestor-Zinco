@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { Button, IconButton } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import { Icone } from "../../Assets/AssetsLog";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import AddButton from "../../Components/Component/AddButton";
@@ -21,6 +21,9 @@ import { deleteAccount } from "../../Api/Accounts/AccountsApi";
 import { openSnackbar } from "../../features/snackbar";
 import { useDispatch } from "react-redux";
 import TransactionList from "../../Components/TransactionList/TransactionList";
+import { AmountFormater } from "../../globalFunctions";
+import NewEntry from "../../Components/Component/NewEntry";
+import ExportBtn from "../../Components/Component/ExportBtn";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -46,6 +49,10 @@ const Incomes = () => {
   const [transactionData, setTransactionData] = React.useState({});
   const [edit, setEdit] = React.useState(false);
   const [isEdit, setIsEdit] = React.useState(false);
+  const [filterDate, setFilterDate] = React.useState({
+    from_date: "",
+    to_date: ""
+  })
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
@@ -75,13 +82,14 @@ const Incomes = () => {
     isLoading: listLoding,
     error: listError,
     data: financeListData,
+    refetch : refetchTransactions 
   } = useQuery(
     "income-transactions",
     () => {
       return listFinanceTransaction({
         finance_type: 0,
-        from_date: "",
-        to_date: "",
+        from_date: filterDate.from_date,
+        to_date: filterDate.to_date,
       });
     },
     { enabled: !paramValue }
@@ -130,6 +138,13 @@ const Incomes = () => {
     },
   });
 
+  useEffect(() => {
+    // console.log(filterDate);
+    if (filterDate.from_date && filterDate.to_date) {
+      refetchTransactions()
+    }
+  }, [filterDate])
+
   return (
     <>
       <div className="flex h-[90%]">
@@ -156,7 +171,7 @@ const Incomes = () => {
                   <span className="text-[11px] text-[#8E8E8E] font-[400] mr-1">
                     {userData.country_details.currency_simbol}
                   </span>
-                  {data?.summary.total}
+                  {AmountFormater(data?.summary.total)}
                 </p>
               </div>
               <div className="bg-white rounded-lg border-[1px] border-[#E8E5E5] px-[12px] py-[5px]  ">
@@ -167,7 +182,7 @@ const Incomes = () => {
                   <span className="text-[11px] text-[#8E8E8E] font-[400] mr-1">
                     {userData.country_details.currency_simbol}
                   </span>
-                  {data?.summary.this_month}
+                  {AmountFormater(data?.summary.this_month)}
                 </p>
               </div>
             </div>
@@ -204,7 +219,7 @@ const Incomes = () => {
                         style={{ backgroundColor: col[key] }}
                       />
                       <span className="text-[#858585] text-[14px] font-[400]">
-                        {data.amount ?? data.balance} % {data.account_name}
+                        {data.amount ?? AmountFormater(data.balance)} % {data.account_name}
                       </span>
                     </div>
                   ))}
@@ -230,7 +245,7 @@ const Incomes = () => {
                       </div>
                       <p className=" text-[10px] font-[400]">
                         {userData.country_details.currency_simbol}
-                        {"  "} {data.balance}
+                        {"  "} {AmountFormater(data.balance)}
                       </p>
                     </div>
                   </CardButton>
@@ -243,11 +258,13 @@ const Incomes = () => {
         <div className="RightContainer w-[71%]">
           {/* */}
           <div className="flex justify-between items-center px-5 pb-5 border-b-[1px] border-[#DEDEDE]">
+            <div className="flex items-center">
             <p className="text-[16px] font-[400]">
               {paramValue
                 ? financeAccount?.summary?.account_name
                 : "Transactions"}{" "}
             </p>
+            <NewEntry  from_date={filterDate.from_date} to_date={filterDate.to_date} set_filterDate={setFilterDate} /></div>
             <div className="flex items-center">
               {/* <p className="mr-[15px] text-[#868686] text-[13px] font-[400]">User role</p> */}
               {financeAccount && (
@@ -275,6 +292,7 @@ const Incomes = () => {
                   </IconButton>
                 </>
               )}
+              <ExportBtn JSONData={financeAccount?.data || financeListData?.data} filename={financeAccount?.summary?.account_name || "Income"} />
               <StyledButton
                 onClick={() => handleOpenTransition()}
                 startIcon={<AddRoundedIcon />}
@@ -290,6 +308,7 @@ const Incomes = () => {
                 !financeAccountLoading &&
                 (financeAccount?.data || financeListData?.data) && (
                   <TransactionList
+                    whoAmI={"IC"}
                     setIsEditIncome={setIsEdit}
                     transData={financeAccount?.data || financeListData?.data}
                     setTransactionData={setTransactionData}

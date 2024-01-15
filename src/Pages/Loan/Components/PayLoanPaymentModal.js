@@ -107,7 +107,7 @@ const PayLoanPaymentModal = (props) => {
       date: loanData.date,
       from_account: selectAccount.id,
       to_account: loanData.account,
-      description: "",
+      description: note,
       finance_type: 1,
       asset_master_id: loanData.accouxnt,
       is_asset: false,
@@ -119,11 +119,11 @@ const PayLoanPaymentModal = (props) => {
     };
 
     if (loanData.payment_type === "0") {
-      payload.amount = loanData.amount + calvalue
+      payload.amount = loanData.amount + parseFloat(calvalue)
       payload.late_fee = calvalue || 0
       payload.is_initial = true
     } else {
-        payload.amount = loanData.amount + calvalue
+        payload.amount = loanData.amount + parseFloat(calvalue)
     }
 
     loanMutate.mutate(payload);
@@ -194,7 +194,7 @@ const PayLoanPaymentModal = (props) => {
 
                   <p className="text-[10px] font-[400]">
                     {userData.country_details.currency_simbol}
-                    {"  "} {data.balance}
+                    {"  "} {AmountFormater(data.balance)}
                   </p>
                 </div>
               ))
@@ -292,9 +292,9 @@ function NotesModal(props) {
   // const handleOpen = () => {
   //   setOpen(true);
   // };
-  // const handleClose = () => {
-  //   setOpen(false);
-  // };
+  const saveNote = function () {
+    props.note && props.handleClose();
+  };
 
   return (
     <>

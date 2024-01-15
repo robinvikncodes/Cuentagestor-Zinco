@@ -47,6 +47,10 @@ const Expenses = () => {
   const [open, setOpen] = React.useState(false);
   const [edit, setEdit] = React.useState(false);
   const [isEdit, setIsEdit] = React.useState(false);
+  const [filterDate, setFilterDate] = React.useState({
+    from_date: "",
+    to_date: ""
+  })
   const [openTransition, setOpenTransition] = React.useState(false);
   const [transactionData, setTransactionData] = React.useState({});
   const [accountSummary, setAccountSummary] = React.useState({
@@ -60,7 +64,6 @@ const Expenses = () => {
     queryClient.invalidateQueries("Expenses-list");
     paramValue && queryClient.invalidateQueries("finance-expenses-transaction");
   };
-  
   const handleOpenTransition = () => setOpenTransition(true);
   const handleCloseTransition = () => {
     setOpenTransition(false);
@@ -89,13 +92,13 @@ const Expenses = () => {
   });
 
   // This will call all the transasctions
-  const { isLoading, data: financeListData } = useQuery(
+  const { isLoading, data: financeListData, refetch : refetchTransactions } = useQuery(
     "expenses_transactions",
     () => {
       return listFinanceTransaction({
         finance_type: 1,
-        from_date: "",
-        to_date: "",
+        from_date: filterDate.from_date,
+        to_date: filterDate.to_date,
       });
     },
     {
@@ -114,8 +117,8 @@ const Expenses = () => {
         account_id: paramValue,
         page_number: "",
         page_size: "",
-        from_date: "",
-        to_date: "",
+        from_date: filterDate.from_date,
+        to_date: filterDate.to_date,
       });
     },
     {
@@ -150,6 +153,14 @@ const Expenses = () => {
       }
     },
   });
+
+  useEffect(() => {
+    // console.log(filterDate);
+    if (filterDate.from_date && filterDate.to_date) {
+      refetchTransactions()
+    }
+  }, [filterDate])
+  
 
   return (
     <>
@@ -268,7 +279,7 @@ const Expenses = () => {
                   ? financeAccount?.summary?.account_name
                   : "Transactions"}{" "}
               </p>
-              <NewEntry />
+              <NewEntry from_date={filterDate.from_date} to_date={filterDate.to_date} set_filterDate={setFilterDate} />
             </div>
             <div className="flex items-center">
               {/* <p className="mr-[15px] text-[#868686] text-[13px] font-[400]">User role</p> */}
@@ -312,6 +323,7 @@ const Expenses = () => {
                 !financeAccountLoading &&
                 (financeAccount?.data || financeListData?.data) && (
                   <TransactionList
+                    whoAmI={"EX"}
                     setIsEditExpenses={setIsEdit}
                     transData={financeAccount?.data || financeListData?.data}
                     setTransactionData={setTransactionData}

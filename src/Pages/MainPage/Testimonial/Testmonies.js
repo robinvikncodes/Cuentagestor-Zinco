@@ -42,7 +42,7 @@ const testmoneyList = [
 
 const Testmonies = () => {
   return (
-    <div id="testmonies" className=" py-10">
+    <div id="testmonies" className="pt-20 pb-10">
       <div className="mb-7">
         <h2 className="text-[#028FCB] text-[31px] sm:text-[41px] lg:text-[48px] font-[700] text-center leading-6 sm:leading-8 lg:leading-10 tracking-tighter">
           What Our Users Say

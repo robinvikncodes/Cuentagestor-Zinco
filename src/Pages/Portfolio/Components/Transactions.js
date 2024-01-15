@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { Button, Popover } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { Icone } from "../../../Assets/AssetsLog";
 import TransactionModal from "../../Income/Components/TransactionModal";
@@ -8,6 +8,7 @@ import TransactionModalEx from "../../Expenses/Components/TransactionModal";
 import TransactionList from "../../../Components/TransactionList/TransactionList";
 import { useQuery, useQueryClient } from "react-query";
 import { listFinanceTransaction } from "../../../Api/Finance/FinanceApi";
+import NewEntry from "../../../Components/Component/NewEntry";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
@@ -20,6 +21,10 @@ const Transactions = (props) => {
   const [openIncome, setOpenIncome] = useState(false);
   const [transData, setTransData] = useState(null);
   const [transactionData, setTransactionData] = useState({});
+  const [filterDate, setFilterDate] = React.useState({
+    from_date: "",
+    to_date: ""
+  })
 
   // Handle Functions
   const handleOpenExpenses = () => setOpenExpenses(true);
@@ -51,7 +56,8 @@ const Transactions = (props) => {
 
   const transationData = useQuery(
     ["asset-transationData", props.paramValue],
-    () => listFinanceTransaction({ asset_master_id:  props.assetDetail.asset_master_id ,is_asset: true, finance_type: 2 }),
+    () => listFinanceTransaction({ asset_master_id:  props.assetDetail.asset_master_id ,is_asset: true, finance_type: 2,         from_date: filterDate.from_date,
+      to_date: filterDate.to_date, }),
     {
       enabled: !!props.paramValue,
       onSuccess: (data) => {
@@ -64,13 +70,21 @@ const Transactions = (props) => {
     }
   )
 
-  
+  useEffect(() => {
+    // console.log(filterDate);
+    if (filterDate.from_date && filterDate.to_date) {
+      transationData.refetch()
+    }
+  }, [filterDate])
 
   return (
     <>
-      <div>
+      <div className="h-[76vh] overflow-y-scroll">
         <div className="flex justify-between items-center px-5 pb-5 border-b-[1px] border-[#DEDEDE]">
+        <div className="flex items-center">
           <p className="text-[16px] font-[400]">{props.assetDetail.asset_name}</p>
+          <NewEntry from_date={filterDate.from_date} to_date={filterDate.to_date} set_filterDate={setFilterDate} />
+          </div>
           <div className="flex items-center">
             {/* <p className="mr-[15px] text-[#868686] text-[13px] font-[400]">User role</p> */}
 
@@ -137,6 +151,7 @@ const Transactions = (props) => {
 
         <div className="p-[20px]">
         <TransactionList
+        whoAmI={"AS"}
           setIsEditExpenses = {setIsEditExpenses}
           setIsEditIncome= {setIsEditIncome}
           transData={transData?.data}

@@ -30,7 +30,7 @@ const Navbar = () => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
 
-  const [isExpired, setIsExpired] = React.useState(true);
+  const [isExpired, setIsExpired] = React.useState(false);
   const handleCloseExpire = function () {
     setIsExpired(false);
   };

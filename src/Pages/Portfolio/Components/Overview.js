@@ -249,6 +249,7 @@ const InfoOverview = function ({ assetDetail }) {
 
   const handleCloseStock = () => {
     setOpenStock(false);
+    seteditProperty(false)
     queryClient.invalidateQueries(["show_Asset_data", assetDetail.data.id]);
   };
   const handleCloseProperty = () => {

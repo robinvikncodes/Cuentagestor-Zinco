@@ -12,12 +12,13 @@ import { deleteTransfer } from "../../Api/Transfer/TransferApi";
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
 const TransactionList = (props) => {
+  let mainData = ""
   let switchDel = true
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
-  // const [switchDelete, setSwitchDelete] = useState(true)
 
   const returnLogo = function (type) {
+  mainData = type
     switch (type) {
       case 0:
         // contact
@@ -103,7 +104,7 @@ const TransactionList = (props) => {
   };
 
   const showTransactionRoll = function (voucher_type, amount) {
-    console.log();
+    // console.log();
     switch (voucher_type) {
       case "LEX":
         return {color: "#C90101", edit: false, delete: true};
@@ -138,7 +139,8 @@ const TransactionList = (props) => {
 
   const editTransaction = function (data) {
     // props.setTransactionData(data.id)
-    console.log(data);
+    // console.log(data);
+    // mainData = data
     if (data.to_account_account_type === 4 || data.to_account_type === 4) {
       props.setIsEditExpenses(true);
       props.setTransactionData(data);
@@ -162,28 +164,36 @@ const TransactionList = (props) => {
 
   const deleteTsaction = useMutation({
     mutationFn: (newData) => switchDel ? deleteTransaction({ ...newData }) : deleteTransfer({ ...newData}),
-    onSuccess: (data) => {
-      if (data.StatusCode === 6000) {
+    onSuccess: (res) => {
+      if (res.StatusCode === 6000) {
         dispatch(
           openSnackbar({
             open: true,
-            message: data.data,
+            message: res.data,
             severity: "success",
           })
         );
-        if (data.to_account_account_type === 4 || data.to_account_type === 4) {
-          queryClient.invalidateQueries("finance-expenses-transaction");
-        } else if (data.from_account_type === 3 || data.from_account_account_type === 3) {
-          queryClient.invalidateQueries("finance-income-transaction");
+        if (props.whoAmI === "EX" ) {
+          queryClient.invalidateQueries(["finance-expenses-transaction"]);
+          queryClient.invalidateQueries("expenses_transactions");
+          queryClient.invalidateQueries("Expenses-list");
+        } else if (props.whoAmI === "IC") {
+          queryClient.invalidateQueries(["finance-income-transaction"]);
+          queryClient.invalidateQueries("income-transactions");
+          queryClient.invalidateQueries("Incomes-list");
+        } else if (props.whoAmI === "AS") {
+          queryClient.invalidateQueries(["asset-transationData"]);
         } else {
           queryClient.invalidateQueries("account-transationData");
+          queryClient.invalidateQueries("call-account-data");
+          queryClient.invalidateQueries("account-details-dashboard");
         }
         // setenabled(false);
       } else {
         dispatch(
           openSnackbar({
             open: true,
-            message: data.errors,
+            message: res.errors || res.message || "Some error occured",
             severity: "error",
           })
         );
@@ -192,6 +202,7 @@ const TransactionList = (props) => {
   });
 
   const deleteTransation = function (id, type) {
+
     if (type === "TEX" || type === "TIC") {
       switchDel = false
     } else {

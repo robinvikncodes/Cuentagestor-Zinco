@@ -51,7 +51,8 @@ const PropertyAdd = (props) => {
     },
   });
 
-  const submitTransaction = function () {
+  const submitTransaction = function (e) {
+    e.preventDefault();
     let payload = {
       asset_master_id: props.account,
       property_name: data.propertyName,
@@ -77,8 +78,10 @@ const PropertyAdd = (props) => {
   
   return (
     <ZincoModal open={props.open} handleClose={props.handleClose}>
+      <form onSubmit={e => submitTransaction(e)} >
       <div className="py-[15px] px-3 w-[450px]">
         <input
+          required
           placeholder="Property Name"
           value={data.propertyName}
           onChange={(e) => setData({ ...data, propertyName: e.target.value })}
@@ -86,6 +89,7 @@ const PropertyAdd = (props) => {
           className="bg-[#F3F7FC] border border-[#D6D6D6] rounded text-[15px] p-2 w-full mb-3"
         />
         <input
+          required
           placeholder="Value"
           value={data.value}
           onChange={(e) => setData({ ...data, value: e.target.value })}
@@ -98,10 +102,11 @@ const PropertyAdd = (props) => {
           <img src={Icone.ClipIcon} alt="" />
         </IconButton>
         <p className="text-[16px] font-[500]">Add Property</p>
-        <IconButton onClick={submitTransaction}>
+        <IconButton type='submit' >
           <img src={Icone.CheckIcon} alt="" />
         </IconButton>
       </div>
+      </form>
     </ZincoModal>
   );
 };

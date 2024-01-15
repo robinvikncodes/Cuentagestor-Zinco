@@ -63,7 +63,7 @@ const AddTransactionsModal = (props) => {
     contact: false,
   });
   const [calValue, setCalValue] = useState("");
-  const [noteText, setNoteText] = useState("")
+  const [noteText, setNoteText] = useState("");
   const [accountList, setAccountList] = useState({
     data: [],
   });
@@ -210,31 +210,41 @@ const AddTransactionsModal = (props) => {
     // console.log(button);
 
     // console.log(date, "date");
-    const newTodo = {
-      time: `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`,
-      date: date,
-      from_account,
-      to_account,
-      amount: calValue,
-      description: noteText,
-      finance_type,
-      asset_master_id: 0,
-      is_asset: false,
-      is_reminder: false,
-      reminder_date: new Date().toISOString().substr(0, 10),
-    };
+    if (calValue <= 0) {
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: "Amount must be grater than 0",
+          severity: "error",
+        })
+      );
+    } else {
+      const newTodo = {
+        time: `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`,
+        date: date,
+        from_account,
+        to_account,
+        amount: calValue,
+        description: noteText,
+        finance_type,
+        asset_master_id: 0,
+        is_asset: false,
+        is_reminder: false,
+        reminder_date: new Date().toISOString().substr(0, 10),
+      };
 
-    if(reminderDate) {
-      newTodo.reminder_date = reminderDate.format('YYYY-MM-DD'); 
-      newTodo.is_reminder = true
-    }
+      if (reminderDate) {
+        newTodo.reminder_date = reminderDate.format("YYYY-MM-DD");
+        newTodo.is_reminder = true;
+      }
 
-    if (props.edit && calValue) {
-      newTodo.id = props.transData.id;
-    }
+      if (props.edit && calValue) {
+        newTodo.id = props.transData.id;
+      }
 
-    if (from_account !== to_account && calValue) {
-      transactionMutation.mutate(newTodo);
+      if (from_account !== to_account && calValue) {
+        transactionMutation.mutate(newTodo);
+      }
     }
   };
 
@@ -242,6 +252,7 @@ const AddTransactionsModal = (props) => {
     if (props.edit) {
       queryClient.invalidateQueries(["account-list"]);
       queryClient.invalidateQueries(["contact_account_transaction"]);
+    } else {
     }
   }, [props.edit]);
 
@@ -323,7 +334,9 @@ const AddTransactionsModal = (props) => {
                   {/* text-[#15960A] */}
                   <p className=" text-[10px] font-[400]">
                     {userData.country_details.currency_simbol}{" "}
-                    {AmountFormater(props.contactDetail?.data?.balance)}
+                    {Math.abs(
+                      AmountFormater(props.contactDetail?.data?.balance)
+                    )}
                   </p>
                 </div>
               ) : (
@@ -352,7 +365,7 @@ const AddTransactionsModal = (props) => {
                             </div>
                             <p className="text-[10px] font-[400]">
                               {userData.country_details.currency_simbol}
-                              {"  "} {data.balance}
+                              {"  "} {AmountFormater(data.balance)}
                             </p>
                           </div>
                         ) : (
@@ -421,8 +434,18 @@ const AddTransactionsModal = (props) => {
           </IconButton>
         </div>
       </div>
-      <NotesModal open={openNote} handleClose={handleCloseNote} noteText={noteText} setNoteText={setNoteText} />
-      <ReminderModal open={openReminder} handleClose={handleCloseReminder} value={reminderDate} setValue={setReminderDate} />
+      <NotesModal
+        open={openNote}
+        handleClose={handleCloseNote}
+        noteText={noteText}
+        setNoteText={setNoteText}
+      />
+      <ReminderModal
+        open={openReminder}
+        handleClose={handleCloseReminder}
+        value={reminderDate}
+        setValue={setReminderDate}
+      />
     </ZincoModal>
   );
 };
@@ -480,9 +503,9 @@ function NotesModal(props) {
   // const handleClose = () => {
   //   setOpen(false);
   // };
-  const saveNote = function() {
-    props.noteText && props.handleClose()
-  }
+  const saveNote = function () {
+    props.noteText && props.handleClose();
+  };
 
   return (
     <>
@@ -508,10 +531,10 @@ function NotesModal(props) {
               // cols="25"
               rows="6"
               value={props.noteText}
-              onChange={e => props.setNoteText(e.target.value)}
+              onChange={(e) => props.setNoteText(e.target.value)}
               placeholder="Type here.."
             ></textarea>
-            <SaveButton onClick={() => saveNote()} >Save</SaveButton>
+            <SaveButton onClick={() => saveNote()}>Save</SaveButton>
             <CancelButton onClick={() => props.handleClose()}>
               Cancel
             </CancelButton>
@@ -522,13 +545,13 @@ function NotesModal(props) {
   );
 }
 
-function ReminderModal({open, handleClose, value, setValue}) {
+function ReminderModal({ open, handleClose, value, setValue }) {
   // const [value, setValue] = React.useState(moment());
 
-  const SaveReminder = function() {
+  const SaveReminder = function () {
     console.log(value);
-    value && handleClose()
-  }
+    value && handleClose();
+  };
 
   return (
     <>
@@ -545,18 +568,16 @@ function ReminderModal({open, handleClose, value, setValue}) {
             <div>
               <LocalizationProvider dateAdapter={AdapterMoment}>
                 <DateCalendar
-                disablePast
-                inputFormat="yyyy-MM-dd"
+                  disablePast
+                  inputFormat="yyyy-MM-dd"
                   value={value}
                   onChange={(newValue) => setValue(newValue)}
                 />
               </LocalizationProvider>
             </div>
             <div className="flex"></div>
-            <SaveButton onClick={() => SaveReminder() } >Save</SaveButton>
-            <CancelButton onClick={() => handleClose()}>
-              Cancel
-            </CancelButton>
+            <SaveButton onClick={() => SaveReminder()}>Save</SaveButton>
+            <CancelButton onClick={() => handleClose()}>Cancel</CancelButton>
           </div>
         </Box>
       </Modal>

@@ -11,34 +11,62 @@ import {
   userCountryList,
 } from "../../../Api/Countrys/countryesApi";
 import { BaseUrl } from "../../../globalVariable";
+import { openSnackbar } from "../../../features/snackbar";
+import { useDispatch } from "react-redux";
 
-const userData = JSON.parse(localStorage.getItem("UserCredentials"))
+const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
 const CountryModal = (props) => {
+  // let allcountry =[]
+  const [allcountry, setAllcountry] = useState({
+    listCountry: [],
+    defaultCountry: []
+  })
+  const dispatch = useDispatch()
   const [boolean, setBoolean] = useState(true);
-  const [countryObj, setcountryObj] = useState({})
+  const [countryText, setCountryText] = useState({
+    defaultCountry: "",
+    listCountry: ""
+  })
+  const [countryObj, setcountryObj] = useState({});
+  const [countryList, setcountryLists] = useState([]);
+  
   const [isLoading, setIsLoading] = useState(true);
   const [defaultCountryList, setDefaultCountryList] = useState([]);
+
+  const callCountryList = function () {
+    userCountryList().then((res) => {
+      setAllcountry({...allcountry, listCountry: res.data})
+      console.log(res.data);
+      setcountryLists(res.data);
+    });
+  };
+
+  // const { isLoading, data } = useQuery(
+  //   "country-list",
+  //   () => {
+  //     return countryLists();
+  //   },
+  //   {
+  //     onSuccess: (res) => {
+  //       console.log(res);
+  //     },
+  //   }
+  // );
 
   // const { isLoading, error, data } = useQuery("country-list", () => {
   //   return countryLists();
   // });
-  const [countryList, setcountryLists] = useState([]);
-
-  const callCountryList = function () {
-    userCountryList().then((res) => {
-      setcountryLists(res.data);
-    });
-  };
 
   const {
     isLoading: defCouisLoding,
     error: defCouError,
     data: defCouData,
-  } = useQuery("defaultCountry-list",  () => userCountryList(), {
-    onSuccess: data => {
+  } = useQuery("defaultCountry-list", () => userCountryList(), {
+    onSuccess: (data) => {
       if (data.StatusCode === 6000) {
         setcountryLists(data.data);
+        setAllcountry({...allcountry, listCountry: data.data})
       }
     },
     // staleTime: Infinity, // data will never go stale
@@ -55,7 +83,7 @@ const CountryModal = (props) => {
         country_details: { ...country.country, id: country.id },
       })
     );
-    defaultMutate.mutate({ id: country.id, is_default: true })
+    defaultMutate.mutate({ id: country.id, is_default: true });
   };
 
   const defaultMutate = useMutation({
@@ -67,12 +95,12 @@ const CountryModal = (props) => {
       if (data.StatusCode !== 6000) {
       } else {
         // localStorage.setItem("UserCredentials", JSON.stringify({...userData, country_details: countryObj}))
-        window.location.reload()
+        window.location.reload();
         // callCountryList()
       }
     },
   });
-
+  
   const countryMutate = useMutation({
     mutationFn: (newData) => {
       return createCountry({ ...newData });
@@ -80,22 +108,60 @@ const CountryModal = (props) => {
     onSuccess: (data) => {
       console.log(data);
       if (data.StatusCode !== 6000) {
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: data.errors,
+            severity: "success",
+          })
+        );
       } else {
-
-        callCountryList()
+        callCountryList();
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: "Country added Successfully",
+            severity: "success",
+          })
+        );
       }
     },
   });
-  
+
   // useEffect(() => {
-    //   callCountryList()
-    // }, []);
-  
+  //   callCountryList()
+  // }, []);
+
   const setCountry = function (country) {
     countryMutate.mutate({ country });
   };
 
-  console.log(countryList);
+  const handlechangea = (e)=> {
+    const {value}=e.target;
+    // console.log(value,"0000000000000000-----====");
+    if(value){
+    let countryList = allcountry.listCountry.filter(j => e.target.value === "" || j.country.country_name.toLowerCase().includes(e.target.value.toLowerCase()))
+
+    console.log(countryList, allcountry.listCountry);
+    setcountryLists( countryList )
+    }else{
+      setcountryLists(allcountry.listCountry)  
+    }
+  };
+
+  const handlechangeb = (e)=> {
+    const {value}=e.target;
+    console.log(value,"0000000000000000-----====");
+    if(value){
+    let countryList = allcountry.defaultCountry.filter(j => e.target.value === "" || j.country_name.toLowerCase().includes(e.target.value.toLowerCase()))
+
+    // console.log(countryList, allcountry.defaultCountry);
+    setDefaultCountryList( countryList )
+    }else{
+      setDefaultCountryList(allcountry.defaultCountry)
+    }
+  };
+  // console.log(countryList);
 
   useEffect(() => {
     fetch(BaseUrl + "/api/v1/country/list-default-country/", {
@@ -107,9 +173,19 @@ const CountryModal = (props) => {
         console.log(res);
         if (res.StatusCode === 6000) {
           setDefaultCountryList(res.data);
+          // console.log(res.data);
+          // allcountry = res.data
+          setAllcountry({...allcountry, defaultCountry: res.data})
         }
       });
   }, []);
+
+  // useEffect(() => {
+    
+  //   let countryList = defaultCountryList.filter(j => countryText.listCountry === "" || j.country_name.toLowerCase().includes(countryText.listCountry.toLowerCase()))
+  //   console.log(countryList, allcountry.defaultCountry);
+  //   setDefaultCountryList(countryList.length ? countryList : allcountry.defaultCountry)
+  // }, [countryText.listCountry])
 
   return (
     <ZincoModal
@@ -150,6 +226,7 @@ const CountryModal = (props) => {
                 type="text"
                 placeholder="Search"
                 className="px-6 py-4 w-full bg-[#EEEEEE]"
+                onChange={e => handlechangea(e)}
               />
               {countryList.map((country, key) => (
                 <Button
@@ -179,6 +256,7 @@ const CountryModal = (props) => {
                 type="text"
                 placeholder="Search"
                 className="px-6 py-4 w-full bg-[#EEEEEE]"
+                onChange={(e) => handlechangeb(e)}
               />
               {!isLoading &&
                 defaultCountryList.map((country, key) => (

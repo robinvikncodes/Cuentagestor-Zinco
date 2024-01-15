@@ -28,6 +28,8 @@ import { createAssets, updateAssets } from "../../../Api/Assets/AssetsApi";
 import { openSnackbar } from "../../../features/snackbar";
 import { useDispatch } from "react-redux";
 import { BaseUrl } from "../../../globalVariable";
+import { organization } from "../../../Api/zincoApi";
+import { AmountFormater } from "../../../globalFunctions";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 let imgFile;
@@ -139,7 +141,7 @@ const AddAssetsModal = (props) => {
       onSuccess: (res) => {
         // console.log("I am hear *****************************&&&&&&&&&&&&&&&&&&&7777777");
         setdata(res)
-        if (props.edit === true) {
+        if (props.edit === true &&  !props.assetData?.data?.asset_details[0]?.pre_owned) {
           let account = res.data.filter(item => item.id === props.assetData.data.asset_details[0].from_account)
           // console.log(account, "Hear is the account name");
           // setSelectAccount(account[0])
@@ -172,7 +174,7 @@ const AddAssetsModal = (props) => {
         dispatch(
           openSnackbar({
             open: true,
-            message: data.message || "Some Error occured",
+            message: data.message || data.errors || "Some Error occured",
             severity: "error",
           })
         );
@@ -180,11 +182,13 @@ const AddAssetsModal = (props) => {
         dispatch(
           openSnackbar({
             open: true,
-            message: data.message || data.errors,
+            message: data.message || data.errors || "Some Error occured",
             severity: "success",
           })
         );
         queryClient.invalidateQueries("assets-list");
+        queryClient.invalidateQueries("show_Asset_data");
+        queryClient.invalidateQueries("view_Asset_data");
         clearState();
         props.handleClose();
       }
@@ -196,8 +200,8 @@ const AddAssetsModal = (props) => {
       ...submitData,
       asset_details: {
         ...assetDetails,
-        value: submitData.value || assetDetails.value,
-        share: submitData.share || assetDetails.share,
+        value: assetDetails.value || submitData.value,
+        share: assetDetails.share || submitData.share,
         // pre_owned: assetDetails.pre_owned ? "True" : "False",
         pre_owned: assetDetails.pre_owned,
       },
@@ -207,8 +211,10 @@ const AddAssetsModal = (props) => {
 
     if (props.edit) {
       payload.id = props.assetData?.data?.id;
+      console.log(...props.assetData?.data?.asset_details);
       payload.asset_details = [
-        ...props.assetData?.data?.asset_details,
+        // ...props.assetData?.data?.asset_details,
+        assetDetails
       ];
       payload.address = {
         ...address,
@@ -227,16 +233,20 @@ const AddAssetsModal = (props) => {
         asset_name: props.assetData?.data?.asset_name,
         date: props.assetData?.data?.date,
         asset_type: parseInt(props.assetData?.data?.asset_type),
-        total_share: parseInt(props.assetData?.data?.total_share),
-        total_value: parseInt(props.assetData?.data?.total_value),
+        total_share: AmountFormater(props.assetData?.data?.total_share),
+        total_value: AmountFormater(props.assetData?.data?.total_value),
       });
       setAssetDetails({
         pre_owned: props.assetData?.data?.asset_details[0]?.pre_owned,
         from_account: props.assetData?.data?.asset_details[0]?.from_account,
-        // from_account_name: props.assetData?.data?.asset_details[0]?.account_name,
+        from_account_name: props.assetData?.data?.asset_details[0]?.account_name,
         as_on_date: props.assetData?.data?.asset_details[0]?.as_on_date,
-        value: parseInt(props.assetData?.data?.asset_details[0]?.value),
-        share: parseInt(props.assetData?.data?.asset_details[0]?.share),
+        value: AmountFormater(props.assetData?.data?.asset_details[0]?.value),
+        share: AmountFormater(props.assetData?.data?.asset_details[0]?.share),
+        asset_detail_id: props.assetData?.data?.asset_details[0]?.asset_detail_id,
+        asset_master: props.assetData?.data?.asset_details[0]?.asset_master,
+        id: props.assetData?.data?.asset_details[0]?.id,
+        organization: organization
       });
       setaddress({
         address_name: props.assetData?.data?.address[0]?.address_name,
@@ -443,7 +453,7 @@ const AddAssetsModal = (props) => {
                       </>
                     )}
                     <p className="text-[10px] font-[400]">
-                      {userData.country_details.currency_simbol} {data.balance}
+                      {userData.country_details.currency_simbol} {AmountFormater(data.balance)}
                     </p>
                   </div>
                 </>

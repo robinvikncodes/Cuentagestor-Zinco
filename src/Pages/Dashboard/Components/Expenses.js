@@ -53,7 +53,7 @@ const Expenses = () => {
                 <span className="text-[11px] text-[#8E8E8E] font-[400] mr-1">
                   {userData.country_details.currency_simbol}
                 </span>
-                {data?.summary.total}
+                {AmountFormater(data?.summary.total)}
               </p>
             </div>
             <div className="bg-white rounded-lg border-[1px] border-[#E8E5E5] px-[12px] py-[5px] w-[161px] mr-2">
@@ -64,7 +64,7 @@ const Expenses = () => {
                 <span className="text-[11px] text-[#8E8E8E] font-[400] mr-1">
                   {userData.country_details.currency_simbol}
                 </span>
-                {data?.summary.this_month}
+                {AmountFormater(data?.summary.this_month)}
               </p>
             </div>
             <SearchField width={"269px"} placeholder={"Search Expenses"} />

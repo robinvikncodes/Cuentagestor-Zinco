@@ -2,6 +2,28 @@
 // import { useSelector } from "react-redux";
 import * as XLSX from "xlsx";
 import { store } from "./app/store";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
+const returnVoucherType = function (type) {
+  switch (type) {
+    case "LEX":
+    case "LIC":
+    case "LON":
+      return "Loan";
+    case "EX":
+    case "AEX":
+      return "Expenses";
+    case "IC":
+    case "AIC":
+      return "Income";
+    case "TEX":
+    case "TIC":
+      return "Transfer";
+    default:
+      return "type";
+  }
+};
 
 const LogoutFun = function () {
   localStorage.removeItem("UserCredentials");
@@ -11,18 +33,28 @@ const LogoutFun = function () {
 
 const ExportExcel = function (data, filename) {
   // Convert a binary string to an array buffer
-  //   console.log(data);
 
   let newData = data.map((item) =>
     item.data.map((i) => ({
       Date: item.date,
-      Particular: i.voucher_type,
-      Amount: i.amount,
+      Particular: returnVoucherType(i.voucher_type),
+      Amount: AmountFormater(i.amount),
       Notes: i.description,
     }))
   );
 
   newData = newData.flat();
+
+  // Calculate the total amount
+  const totalAmount = newData.reduce((total, item) => total + parseFloat(item.Amount), 0);
+
+  // Add the total amount to the data
+  newData.push({
+    Date: "Total",
+    Particular: "",
+    Amount: AmountFormater(totalAmount),
+    Notes: "",
+  });
 
   const s2ab = (s) => {
     const buf = new ArrayBuffer(s.length);
@@ -50,6 +82,52 @@ const ExportExcel = function (data, filename) {
   a.click();
 };
 
+const ExportPDF = function (data, filename) {
+
+  let newData = data.map((item) =>
+    item.data.map((i) => ({
+      Date: item.date,
+      Particular: returnVoucherType(i.voucher_type),
+      Amount: AmountFormater(i.amount),
+      Notes: i.description,
+    }))
+  );
+
+  newData = newData.flat();
+
+  // Create a new jsPDF instance
+  const doc = new jsPDF();
+
+  // Calculate the total amount
+  const totalAmount = newData.reduce((total, item) => total + parseFloat(item.Amount), 0);
+
+  // Add the total amount to the data
+  newData.push({ Date: 'Total', Particular: '', Amount: AmountFormater(totalAmount), Notes: '' });
+
+  // Add a title
+  const title = filename + " Report";
+  const fontSize = 18;
+  doc.setFontSize(fontSize);
+
+  // Get width of page and position the title in the center
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const titleWidth =
+    (doc.getStringUnitWidth(title) * fontSize) / doc.internal.scaleFactor;
+  const titleX = (pageWidth - titleWidth) / 2;
+
+  doc.text(title, titleX, 15);
+
+  // Use the autoTable plugin to create a table from the data
+  doc.autoTable({
+    startY: 20, // start below the title
+    head: [Object.keys(newData[0])],
+    body: newData.map(Object.values),
+  });
+
+  // Save the PDF
+  doc.save(filename + ".pdf");
+};
+
 const AmountFormater = function (num) {
   // if (typeof num !== "number" ) {
   const state = store.getState();
@@ -68,11 +146,11 @@ const AmountFormater = function (num) {
     }
   }
 
-  if (returnValue !== "NaN") {
+  if (typeof returnValue === "string") {
     return returnValue;
   }
   // }
   return 0;
 };
 
-export { ExportExcel, AmountFormater, LogoutFun };
+export { ExportExcel, ExportPDF, AmountFormater, LogoutFun };

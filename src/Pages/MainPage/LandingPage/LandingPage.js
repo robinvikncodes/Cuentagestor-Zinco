@@ -9,8 +9,8 @@ const userData = localStorage.getItem("UserCredentials");
 
 const LandingPage = () => {
   return (
-    <div id="landingPage" className="h-[100vh] bg-white lg:px-32 ">
-      <div className="lg:flex justify-between items-center h-full">
+    <div className="h-[100vh] bg-white lg:px-32 ">
+      <div id="landingPage" className="lg:flex justify-between items-center h-full">
         <div className="LeftContainer flex flex-col items-center lg:items-start pt-16">
           <div className="mb-3">
             <h1 className="text-[43px] md:text-[49px] lg:text-[59px] 2xl:text-[91px] font-[700] leading-8 lg:leading-10 tracking-tighter text-center lg:text-left lg:mb-1">Take Control</h1>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import {
   Button,
@@ -54,6 +54,10 @@ const Accounts = () => {
   const [isEditIncome, setIsEditIncome] = useState(false);
   const [isEditTransfer, setIsEditTransfer] = useState(false);
   const [transactionData, setTransactionData] = useState({});
+  const [filterDate, setFilterDate] = React.useState({
+    from_date: "",
+    to_date: ""
+  })
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
@@ -90,7 +94,7 @@ const Accounts = () => {
   const handleCloseTransfer = () => {
     setOpenTransfer(false);
     setIsEditTransfer(false);
-    queryClient.invalidateQueries(["account-transationData", paramValue])
+    queryClient.invalidateQueries("account-details-dashboard")
     queryClient.invalidateQueries(["call-account-data", paramValue])
     queryClient.invalidateQueries(["account-transationData", paramValue])
   };
@@ -129,7 +133,8 @@ const Accounts = () => {
 
   const transationData = useQuery(
     ["account-transationData", paramValue],
-    () => listAccountFinance({ account_id: paramValue }),
+    () => listAccountFinance({ account_id: paramValue,         from_date: filterDate.from_date,
+      to_date: filterDate.to_date, }),
     {
       enabled: !!paramValue,
       onSuccess: (data) => {
@@ -167,7 +172,7 @@ const Accounts = () => {
           })
         );
         queryClient.invalidateQueries({
-          queryKey: ["account-details-dashboard", "call-account-data"],
+          queryKey: ["account-details-dashboard", "call-account-data", "account-transationData", paramValue],
         });
         setAccountDetail(null);
         navigate("/accounts");
@@ -175,7 +180,13 @@ const Accounts = () => {
     },
   });
 
-  console.log(data);
+  useEffect(() => {
+    // console.log(filterDate);
+    if (filterDate.from_date && filterDate.to_date) {
+      transationData.refetch()
+    }
+  }, [filterDate])
+
 
   return (
     <>
@@ -208,7 +219,7 @@ const Accounts = () => {
                       {userData.country_details.currency_simbol}
                     </p>
                     <p className="text-[19px] font-[500]">
-                      {data?.data?.total_cash_balance || "00.00"}
+                      {AmountFormater(data?.data?.total_cash_balance) || "00.00"}
                     </p>
                   </>
                 )}
@@ -236,7 +247,7 @@ const Accounts = () => {
                       {userData.country_details.currency_simbol}
                     </p>
                     <p className="text-[19px] font-[500]">
-                      {data?.data?.total_bank_balance || "00.00"}
+                      {AmountFormater(data?.data?.total_bank_balance) || "00.00"}
                     </p>
                   </>
                 )}
@@ -366,7 +377,7 @@ const Accounts = () => {
                       <span className="text-[#9B9B9B] text-[15px] font-[400]">
                         {userData.country_details.currency_simbol}
                       </span>{" "}
-                      {accountDetail.data.amount_details.usable}
+                      {AmountFormater(accountDetail.data.amount_details.usable)}
                     </p>
                   </div>
                 </div>
@@ -374,7 +385,7 @@ const Accounts = () => {
               <div className="flex justify-between items-center px-5 pb-5 border-b-[1px] border-[#DEDEDE]">
                 <div className="flex items-center">
                   <p className="text-[16px] font-[400]">Transactions</p>
-                  <NewEntry />
+                  <NewEntry from_date={filterDate.from_date} to_date={filterDate.to_date} set_filterDate={setFilterDate} />
                 </div>
                 <div className="flex items-center">
                   {/* <p className="mr-[15px] text-[#868686] text-[13px] font-[400]">User role</p> */}
@@ -488,9 +499,10 @@ const Accounts = () => {
                 <div className="h-[67vh] overflow-y-scroll">
                   {!transationData.isLoading && (
                     <TransactionList
+                      whoAmI={"AC"}
                       setIsEditExpenses={setIsEditExpenses}
                       setIsEditIncome={setIsEditIncome}
-                      transData={transData.data}
+                      transData={transData?.data}
                       setTransactionData={setTransactionData}
                       setOpenIncome={setOpenIncome}
                       setOpenExpenses={setOpenExpenses}

@@ -28,6 +28,7 @@ import SkletionCard from "../../../Components/Skletions/SkletionCard";
 import SearchField from "../../../Components/Component/SearchField";
 import styled from "@emotion/styled";
 import CircleIcon from "@mui/icons-material/Circle";
+import { AmountFormater } from "../../../globalFunctions";
 
 let now = new Date();
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
@@ -43,6 +44,7 @@ const TransferTransaction = (props) => {
   const [calValueFrom, setCalValueFrom] = useState("");
   const [calValueTo, setCalValueTo] = useState("");
   const [fromCountry, setfromCountry] = useState("");
+  const [buttonDisable, setButtonDisable] = useState(true);
   const [toCountry, setToCountry] = useState("");
   const [countryList, setcountryList] = useState([]);
   const [openNote, setOpenNote] = useState(false);
@@ -239,7 +241,7 @@ const TransferTransaction = (props) => {
             fromAccount: res.data.from_account,
             toAccount: res.data.to_account,
           });
-          setNote(res.data.description)
+          setNote(res.data.description);
           // callToAccount();
           setSelectCountry({
             fromCountry: res.data.from_country,
@@ -284,6 +286,7 @@ const TransferTransaction = (props) => {
         : createTransfer({ ...newTodo });
     },
     onSuccess: (data) => {
+      setButtonDisable(true);
       if (data.StatusCode !== 6000) {
         dispatch(
           openSnackbar({
@@ -300,29 +303,49 @@ const TransferTransaction = (props) => {
             severity: "success",
           })
         );
-
+        queryClient.invalidateQueries("details-dashboard");
         props.handleClose();
       }
     },
   });
 
   const submitTransaction = function () {
-    let payload = {
-      date: date,
-      time: `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`,
-      from_account: selectedAccount.fromAccount.id,
-      to_account: selectedAccount.toAccount.id,
-      finance_type: "",
-      description: note,
-      from_country: selectCountry.fromCountry.id,
-      from_amount: calValueFrom,
-      to_country: selectCountry.toCountry.id,
-      to_amount: calValueTo,
-      is_zakath: submitData.is_zakath,
-    };
+    console.log(selectCountry.fromCountry.id , selectCountry.toCountry.id);
+    if (selectedAccount.fromAccount.id === selectedAccount.toAccount.id) {
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: "You cant transfer to same account",
+          severity: "error",
+        })
+      );
+    } else if (calValueTo <= 0 || calValueFrom <= 0) {
+      dispatch(
+        openSnackbar({
+          open: true,
+          message: "Amount must be grater than 0",
+          severity: "error",
+        })
+      );
+    } else {
+      let payload = {
+        date: date,
+        time: `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`,
+        from_account: selectedAccount.fromAccount.id,
+        to_account: selectedAccount.toAccount.id,
+        finance_type: "",
+        description: note,
+        from_country: selectCountry.fromCountry.id,
+        from_amount: calValueFrom,
+        to_country: selectCountry.toCountry.id,
+        to_amount: calValueTo,
+        is_zakath: submitData.is_zakath,
+      };
 
-    if (props.edit) payload.id = props.transID;
-    calValueFrom && calValueTo && mutationTransation.mutate(payload);
+      if (props.edit) payload.id = props.transID;
+      setButtonDisable(false);
+      calValueFrom && calValueTo && mutationTransation.mutate(payload);
+    }
   };
 
   const [expressionFrom, setExpressionFrom] = useState("");
@@ -532,7 +555,7 @@ const TransferTransaction = (props) => {
                         {selectCountry?.fromCountry?.country?.country_code ||
                           selectCountry?.fromCountry?.country_code}
                         {"  "}
-                        {data.balance}
+                        {AmountFormater(data.balance)}
                       </p>
                     </div>
                   ))
@@ -570,7 +593,7 @@ const TransferTransaction = (props) => {
                         {/* {userData.country_details.currency_simbol} */}
                         {selectCountry?.toCountry?.country?.country_code ||
                           selectCountry?.toCountry?.country_code}
-                        {"  "} {data.balance}
+                        {"  "} {AmountFormater(data.balance)}
                       </p>
                     </div>
                   ))
@@ -633,7 +656,7 @@ const TransferTransaction = (props) => {
             </p>
           </div>
           <IconButton
-            disabled={!calValueFrom && !calValueTo}
+            disabled={buttonDisable && !calValueFrom && !calValueTo}
             onClick={submitTransaction}
           >
             <img src={Icone.CheckIcon} alt="" />

@@ -24,11 +24,11 @@ const Footer = () => {
                   Featuers
                 </a>
               </li>
-              <li>
+              {/* <li>
                 <a className="text-white text-[15px] font-[500]" href="/#">
                   Pricing
                 </a>
-              </li>
+              </li> */}
               <li>
                 <a className="text-white text-[15px] font-[500]" href="/#">
                   Testimonials

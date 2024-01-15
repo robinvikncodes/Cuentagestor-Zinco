@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Header from '../../Components/Header/Header'
 import LandingPage from './LandingPage/LandingPage'
 import Features from './Feature/Features'
@@ -9,12 +9,16 @@ import Faq from './Faq/Faq'
 import Footer from '../../Components/Footer/Footer'
 
 const MainPage = () => {
+  useEffect(() => {
+    document.getElementById("main").scrollIntoView();
+  }, [])
   return (
     <>
     <Header/>
+    <div id='main' className='h-4'></div>
     <LandingPage />
     <Features />
-    <Pricing />
+    {/* <Pricing /> */}
     <Testmonies />
     <Contact/>
     <Faq />

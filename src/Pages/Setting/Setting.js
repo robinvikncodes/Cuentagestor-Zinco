@@ -4,15 +4,12 @@ import {
   FormControl,
   IconButton,
   MenuItem,
-  NativeSelect,
   Select,
   Skeleton,
-  Switch,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import styled from "@emotion/styled";
-import ArrowRightRoundedIcon from "@mui/icons-material/ArrowRightRounded";
 import ZincoSwitch from "../../Components/Component/ZincoSwitch";
 import User from "./Components/User";
 import UserRole from "./Components/UserRole";
@@ -30,24 +27,22 @@ let imgFile;
 
 const Setting = () => {
   const settingRedux = useSelector((state) => state.setting.settingDetails);
-  const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  const [boole, setBoole] = useState(true);
+  console.log(settingRedux);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(settingRedux.isLoading)
   const [editValue, setEditValue] = useState({
     username: true,
     email: true,
     biometricLogin: true,
-    is_zakath: false,
+    is_zakath: settingRedux.is_zakath,
     is_reminder: settingRedux.is_reminder,
-    is_interest: false,
-    photo: null,
-    name: "",
-    emailP: "",
+    is_interest: settingRedux.is_interest,
+    photo: settingRedux.photo,
+    name: settingRedux.name,
+    emailP: settingRedux.email,
   });
-  const [settingData, setSettingData] = useState({});
-  const [notification, setNotification] = useState(2);
+  const [notification, setNotification] = useState(settingRedux.reminder_day);
   const [rounding, setRounding] = useState(settingRedux.rounding);
   const [currency, setCurrency] = useState(settingRedux.currency);
   const [openCP, setOpenCP] = useState(false);
@@ -66,6 +61,10 @@ const Setting = () => {
 
   const handleNotification = (event) => {
     setNotification(event.target.value);
+    submitData({
+      type: "reminder_day",
+      value: event.target.value,
+    })
   };
 
   const handleRounding = (event) => {
@@ -98,40 +97,21 @@ const Setting = () => {
     );
   };
 
-  const { isLoading, error, data } = useQuery(
-    "detailSettings",
-    () => {
-      return detailSettings();
-    },
-    {
-      onSuccess: (data) => {
-        if (data.StatusCode === 6000) {
-          // setRounding(data.data.rounding);
-          dispatch(
-            setSettings({
-              is_zakath: data.data.is_zakath,
-              is_interest: data.data.is_interest,
-              rounding: data.data.rounding,
-              is_reminder: data.data.is_reminder,
-            })
-          );
-          // setRounding(data?.data?.rounding)
-          // console.log(data.data.rounding)
-          setEditValue({
-            ...editValue,
-            is_zakath: data.data.is_zakath,
-            is_interest: data.data.is_interest,
-            is_reminder: data.data.is_reminder,
-            photo: data.data.profiles.photo,
-            emailP: data.data.profiles.email,
-            name: data.data.profiles.first_name,
-          });
-        }
-      },
-      // staleTime: Infinity, // data will never go stale
-      // cacheTime: Infinity, // data will never be removed from cache
-    }
-  );
+  useEffect(() => {
+    setEditValue({
+      ...editValue,
+      is_zakath: settingRedux.is_zakath,
+      is_reminder: settingRedux.is_reminder,
+      is_interest: settingRedux.is_interest,
+      photo: settingRedux.photo,
+      name: settingRedux.name,
+      emailP: settingRedux.email,
+    })
+    setIsLoading(settingRedux.isLoading)
+    setNotification(settingRedux.reminder_day)
+    setRounding(settingRedux.rounding)
+  }, [settingRedux])
+  
 
   const handleImageChange = (event) => {
     imgFile = event.target.files[0];
@@ -158,6 +138,17 @@ const Setting = () => {
     mutationFn: (newTodo) => {
       return ChangeSettings({ ...newTodo });
     },
+    onSuccess: res => {
+      if (res.StatusCode === 6000){
+        dispatch(
+          setSettings({
+            name: editValue.name,
+          })
+        );
+      } else {
+
+      }
+    }
   });
 
   const submitData = (data) => {
@@ -191,9 +182,6 @@ const Setting = () => {
                 {isLoading ? (
                   <Skeleton variant="circular" width={96} height={96} />
                 ) : (
-                  // <div className="h-[96px] w-[96px] bg-[#C4D1E1] mr-[14px] rounded-full">
-                  //   <img src="" alt="" />
-                  // </div>
                   <>
                     <IconButton
                       sx={{
@@ -253,7 +241,7 @@ const Setting = () => {
                   )}
                 </div> */}
                   <div className="flex items-center">
-                    {isLoading && !data?.data.profiles.username ? (
+                    {isLoading && editValue.username ? (
                       <Skeleton
                         animation="wave"
                         variant="rounded"
@@ -313,7 +301,7 @@ const Setting = () => {
                   </div>
 
                   <div className="flex items-center ">
-                    {isLoading && !data?.data.profiles.email ? (
+                    {isLoading && editValue.email ? (
                       <Skeleton
                         animation="wave"
                         variant="rounded"

@@ -7,7 +7,7 @@ import SearchField from "../../Components/Component/SearchField";
 import Overview from "./Components/Overview";
 import Transactions from "./Components/Transactions";
 import AddAssetsModal from "./Components/AddAssetsModal";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import {
   deleteAssets,
   detailAssets,
@@ -23,6 +23,7 @@ import { AmountFormater } from "../../globalFunctions";
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
 const Portfolio = () => {
+  const queryClient = useQueryClient()
   const [searchParams] = useSearchParams();
   const paramValue = searchParams.get("id");
   const navigate = useNavigate();
@@ -124,7 +125,7 @@ const Portfolio = () => {
         dispatch(
           openSnackbar({
             open: true,
-            message: data.errors,
+            message: data.errors || data.message,
             severity: "error",
           })
         );
@@ -137,6 +138,7 @@ const Portfolio = () => {
           })
         );
         setIsetPage(false);
+        queryClient.invalidateQueries("assets-list")
         navigate("/portfolio");
       }
     },
@@ -224,7 +226,7 @@ const Portfolio = () => {
         </div>
 
         {isetPage && (
-          <div className="RightContainer w-[72%] overflow-y-scroll h-[77vh]">
+          <div className="RightContainer w-[72%]">
             <div className="flex items-center px-5 mb-5">
               <StyledToggleButton
                 active={boolean}

@@ -30,9 +30,9 @@ function App() {
   const dispatch = useDispatch();
   const user = localStorage.getItem("UserCredentials");
 
-  const [isExpired, setIsExpired] = useState(isExpiredReducer.isUserExpired);
+  const [isExpired, setIsExpired] = useState(false);
   const handleCloseExpire = function () {
-    setIsExpired(isExpiredReducer.isUserExpired);
+    setIsExpired(false);
   };
 
   console.log(isExpiredReducer.isUserExpired, "Thore is back ++++++++++++++++++++++++++++");
@@ -84,7 +84,7 @@ function App() {
           )}
         </div>
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-        <ZincoModal open={isHomePage ? false : isExpired} handleClose={handleCloseExpire}>
+        {/* <ZincoModal open={isExpired} handleClose={handleCloseExpire}>
           <div className="px-[48px] py-[41px]">
             <img src={Images.ExpireImg} alt="" className="mb-4"/>
             <p className="text-[#5346BD] texxt-[16px] font-[400] text-center">
@@ -106,7 +106,7 @@ function App() {
               </Button>
             </div>
           </div>
-        </ZincoModal>
+        </ZincoModal> */}
       </QueryClientProvider>
     </>
   );

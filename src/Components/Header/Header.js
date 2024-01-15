@@ -1,5 +1,5 @@
 import { Button, IconButton, SwipeableDrawer } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Icone, Logo } from "../../Assets/AssetsLog";
 import styled from "@emotion/styled";
 import { Link } from "react-router-dom";
@@ -10,8 +10,10 @@ const Header = () => {
   const closeDrawer = () => setOpen(false);
 
   const comeToLandingPage = function () {
-    document.getElementById("landingPage").scrollIntoView();
+    // document.getElementById("landingPage").scrollIntoView();
   };
+
+  
   return (
     <header className="sticky top-0 z-50 bg-white">
       {/* For Desktop */}
@@ -29,9 +31,9 @@ const Header = () => {
             <li className="mr-4">
               <a href="/#features">Featuers</a>
             </li>
-            <li className="mr-4">
+            {/* <li className="mr-4">
               <a href="/#pricing">Pricing</a>
-            </li>
+            </li> */}
             <li className="mr-4">
               <a href="/#testmonies">Testimonials</a>
             </li>

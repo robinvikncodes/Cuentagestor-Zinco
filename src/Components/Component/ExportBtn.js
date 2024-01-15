@@ -1,13 +1,16 @@
 import styled from "@emotion/styled";
 import { Button, Popover, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Icone } from "../../Assets/AssetsLog";
 import GridOnIcon from "@mui/icons-material/GridOn";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import { ExportExcel } from "../../globalFunctions";
+import { ExportExcel, ExportPDF } from "../../globalFunctions";
+import { useSelector } from "react-redux";
 
 const ExportBtn = (props) => {
+  const userRollReducer = useSelector((state) => state.userRole.state);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [disable, setdisable] = useState(false);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -19,9 +22,17 @@ const ExportBtn = (props) => {
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
+  // console.log(userRollReducer[props.name]);
+  useEffect(() => {
+    if (userRollReducer.report_export !== undefined) {
+      // console.log(userRollReducer.report_export.view_permission);
+      setdisable(!userRollReducer.report_export.view_permission);
+    }
+  }, [userRollReducer]);
   return (
     <>
       <Button
+        disabled={disable}
         variant="text"
         sx={{
           color: "#0245B2",
@@ -75,6 +86,7 @@ const ExportBtn = (props) => {
         </Button>
         <Button
           startIcon={<PictureAsPdfIcon />}
+          onClick={() => ExportPDF(props.JSONData, props.filename)}
           sx={{
             display: "flex",
             justifyContent: "flex-start",

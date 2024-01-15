@@ -7,6 +7,7 @@ import { createAccount, updateAccount } from "../../../Api/Accounts/AccountsApi"
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { openSnackbar } from "../../../features/snackbar";
 import { useDispatch } from "react-redux";
+import { AmountFormater } from "../../../globalFunctions";
 
 const style = {
   position: "absolute",
@@ -56,6 +57,9 @@ const AddAccountModal = (props) => {
           })
         props.handleClose();
         queryClient.invalidateQueries('details-dashboard')
+        queryClient.invalidateQueries("account-details-dashboard")
+        queryClient.invalidateQueries("call-account-data")
+        queryClient.invalidateQueries("account-transationData")
       }
     },
   }); 
@@ -137,7 +141,7 @@ const AddAccountModal = (props) => {
     if (props.edit) {
       setAccountData({
         account_name : props.accountDetail.data.account_name,
-        opening_balance : parseFloat(props.accountDetail.data.opening_balance).toFixed(2)
+        opening_balance : AmountFormater(props.accountDetail.data.opening_balance)
       })
       setAccount(props.accountDetail.data.account_type === '1' ? true : false)
     } else {
@@ -159,7 +163,7 @@ const AddAccountModal = (props) => {
     >
       <Box sx={style}>
         <div className="px-[26px] py-[21px]">
-          <p className="text-[16px] font-[400] mb-5">{props.edit ? "Edit Account" : "Add an account"}</p>
+          <p className="text-[16px] font-[400] mb-5">{props.edit ? "Edit Account" :   "Add an account"}</p>
           <div className="grid grid-cols-2 gap-x-2 mb-3">
             <ModalButton
               mbgcolor={account ? "#F1FFF0" : "#F8F8F8"}

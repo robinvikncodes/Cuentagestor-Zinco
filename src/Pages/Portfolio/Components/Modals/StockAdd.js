@@ -9,6 +9,7 @@ import ZincoModal from "../../../../Components/Component/ZincoModal";
 import SkletionCard from "../../../../Components/Skletions/SkletionCard";
 import { addStock, editStock } from "../../../../Api/Assets/AssetsApi";
 import { openSnackbar } from "../../../../features/snackbar";
+import { AmountFormater } from "../../../../globalFunctions";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
@@ -92,8 +93,8 @@ const StockAdd = (props) => {
     console.log(props.stockData);
     if (props.edit) {
       setValues({
-        value: parseInt(props.stockData.value),
-        share: parseInt(props.stockData.share),
+        value: AmountFormater(props.stockData.value),
+        share: AmountFormater(props.stockData.share),
       });
       setSelect({ id: props.stockData.from_account });
     } else {

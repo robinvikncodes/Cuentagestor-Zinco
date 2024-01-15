@@ -63,6 +63,7 @@ const AddContactModal = (props) => {
         })
         props.handleClose();
         queryClient.invalidateQueries("contact-list");
+        queryClient.invalidateQueries("details-dashboard");
       }
     },
   });
@@ -124,6 +125,7 @@ const AddContactModal = (props) => {
       props?.contactData?.account_type &&
       props.edit
     ) {
+
       let accountDataPayload = {}
       accountDataPayload.phone = props.contactData.phone
       accountDataPayload.amount = parseFloat(props.contactData.opening_balance).toFixed(2) < 0
@@ -174,7 +176,7 @@ const AddContactModal = (props) => {
       <div className="py-[21px] max-w-[450px]">
         <form onSubmit={(e) => submitAccountData(e)}>
           <div className="px-6 pb-4 border-b-[1px] ">
-            <p className="text-[16px] font-[400]">{props.edit ? "Edit Contact" : "Add an contacts"}</p>
+            <p className="text-[16px] font-[400]">{props.edit ? "Edit Contact":"Add an contacts"}</p>
           </div>
           <div className="w-full flex justify-center py-5">
             <AddButton onClick={() => addImage()}>

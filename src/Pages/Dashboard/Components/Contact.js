@@ -75,10 +75,11 @@ const Contact = () => {
                   <p className="text-[10px] font-[400] w-10/12  text-center">
                     {jet.account_name}
                   </p>
-                  {!jet.photo === null ? (
-                    <div className="bg-[#E2EFFF] p-[10px] rounded-[13px] my-[10px] inline-block w-[34px] h-[34px]">
-                      {/* <Skeleton variant='rectangular' /> */}
-                    </div>
+                  {!jet.photo ? (
+                    // <div className="bg-[#E2EFFF] p-[10px] rounded-[13px] my-[10px] inline-block w-[34px] h-[34px]">
+                    //   {/* <Skeleton variant='rectangular' /> */}
+                    // </div>
+                    <div className=" flex items-center justify-center my-[5px] w-[32px] h-[32px] "><img src={Icone.PersonalcardIcon} alt="" className=" w-[32px] h-[32px]" /> </div>
                   ) : (
                     <img
                       src={BaseUrl + jet.photo}

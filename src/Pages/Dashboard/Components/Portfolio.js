@@ -7,6 +7,7 @@ import { useQuery } from "react-query";
 import { Button, Skeleton } from "@mui/material";
 import { BaseUrl } from "../../../globalVariable";
 import styled from "@emotion/styled";
+import { AmountFormater } from "../../../globalFunctions";
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 const Portfolio = () => {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ const Portfolio = () => {
             <span className="text-[12px] font-[400] text-[#9B9B9B] mr-1">
               {userData.country_details.currency_simbol}
             </span>
-            {!isLoading && data.summary.total_value}
+            {!isLoading && AmountFormater(data.summary.total_value)}
           </p>
         </div>
       </div>

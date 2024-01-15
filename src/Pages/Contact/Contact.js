@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { Button, IconButton, Skeleton } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Icone } from "../../Assets/AssetsLog";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -47,6 +47,10 @@ const Contact = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [isEditTrans, setIsEditTrans] = useState(false);
   const [transData, setTransData] = useState({});
+  const [filterDate, setFilterDate] = useState({
+    from_date: "",
+    to_date: ""
+  })
 
   const handleOpenTransactions = () => setOpenTransactions(true);
   const handleCloseTransactions = () => {
@@ -60,12 +64,13 @@ const Contact = () => {
     // })
     queryClient.invalidateQueries(["contact_account_transaction"]);
     queryClient.invalidateQueries(["contact-list"])
-    // queryClient.invalidateQueries(["contact-detail-transaction"])
+    queryClient.invalidateQueries(["finance_account_details"])
   };
 
   const handleOpenContact = () => setOpenContact(true);
   const handleCloseContact = () => {
     setOpenContact(false);
+    setIsEdit(false)
   };
 
   const {
@@ -122,6 +127,8 @@ const Contact = () => {
         account_id: paramValue,
         finance_type: 1,
         is_contact: true,
+        from_date: filterDate.from_date,
+        to_date: filterDate.to_date,
       });
     },
     {
@@ -242,6 +249,14 @@ const Contact = () => {
     setenabled(true);
   };
 
+  useEffect(() => {
+    // console.log(filterDate);
+    if (filterDate.from_date && filterDate.to_date) {
+      // refetchTransactions()
+      contactTransaction.refetch()
+    }
+  }, [filterDate])
+
   return (
     <>
       <div className="flex h-[90%]">
@@ -273,7 +288,7 @@ const Contact = () => {
                 </p>
                 <p className="text-[17px] font-[500] ">
                   {!isLoadingList ? (
-                    dataList?.total_recievable
+                    AmountFormater(dataList?.total_recievable)
                   ) : (
                     <Skeleton variant="text" />
                   )}
@@ -293,7 +308,7 @@ const Contact = () => {
                 </p>
                 <p className="text-[17px] font-[500] ">
                   {!isLoadingList ? (
-                    dataList?.total_payable
+                    AmountFormater(dataList?.total_payable)
                   ) : (
                     <Skeleton variant="text" />
                   )}
@@ -315,9 +330,10 @@ const Contact = () => {
                       <p className="text-[10px] font-[400]">
                         {data.account_name}
                       </p>
-                      <div className="bg-[#E2EFFF] p-[10px] rounded-full my-[10px] inline-block w-[52px] h-[52px] ">
-                        <img src={BaseUrl + data.photo} alt="" className="" />
-                      </div>
+                      {data.photo ?<div className="bg-[#E2EFFF] p-[10px] rounded-full my-[10px] inline-block w-[52px] h-[52px] ">
+                         <img src={BaseUrl + data.photo} alt="" className="" /> 
+                      </div>:
+                      <div className=" flex items-center justify-center my-[10px] w-[52px] h-[52px] "><img src={Icone.PersonalcardIcon} alt="" className=" w-[32px] h-[32px]" /> </div>   }
                       <p
                         className={`${
                           data.total_paid > data.total_received
@@ -506,7 +522,7 @@ const Contact = () => {
               <div className="flex justify-between items-center px-5 pb-5 border-b-[1px] border-[#DEDEDE]">
               <div className="flex items-center">
                   <p className="text-[16px] font-[400]">Transactions</p>
-                  <NewEntry />
+                  <NewEntry from_date={filterDate.from_date} to_date={filterDate.to_date} set_filterDate={setFilterDate} />
                 </div>
                 <div className="flex items-center">
                   {/* <p className="mr-[15px] text-[#868686] text-[13px] font-[400]">User role</p> */}
@@ -660,14 +676,14 @@ const Contact = () => {
 
                               <div className="mr-3">
                                 {data.from_account_type > 0 ? (
-                                  <p className="text-[19px] font-[500] text-[#15960A] text-right">
+                                  <p className="text-[19px] font-[500] text-[#C90101] text-right">
                                     <span className="text-[#9B9B9B] text-[16px] font-[400] text-right">
                                       {userData.country_details.currency_simbol}
                                     </span>{" "}
                                     {AmountFormater(data.amount)}
                                   </p>
                                 ) : (
-                                  <p className="text-[19px] font-[500] text-[#C90101] text-right">
+                                  <p className="text-[19px] font-[500] text-[#15960A] text-right">
                                     <span className="text-[#9B9B9B] text-[16px] font-[400] text-right">
                                       {userData.country_details.currency_simbol}
                                     </span>{" "}
@@ -741,7 +757,7 @@ const Contact = () => {
         edit={isEdit}
         contactData={dataContact?.data}
       />}
-     {openTransactions && <AddTransactionsModal
+      {openTransactions && <AddTransactionsModal
         open={openTransactions}
         handleClose={handleCloseTransactions}
         edit={isEditTrans}

@@ -77,11 +77,45 @@ const NewEntry = (props) => {
       >
         {/* {props.children} */}
         <div className="p-2">
-          <label htmlFor="fromDate" className="text-[#9B9B9B] text-[13px] font-[500]">From Date :</label>
-          <input type="date" id="fromDate" name="fromDate" className="mb-1 p-1 rounded-lg" />
+          <label
+            htmlFor="fromDate"
+            className="text-[#9B9B9B] text-[13px] font-[500]"
+          >
+            From Date :
+          </label>
+          <input
+            type="date"
+            id="fromDate"
+            name="fromDate"
+            className="mb-1 p-1 rounded-lg"
+            value={props.from_date}
+            onChange={(e) =>
+              props.set_filterDate((prev) => ({
+                ...prev,
+                from_date: new Date(e.target.value).toJSON().slice(0, 10),
+              }))
+            }
+          />
 
-          <label htmlFor="toDate" className="text-[#9B9B9B] text-[13px] font-[500]">To Date :</label>
-          <input type="date" id="toDate" name="toDate" className="mb-1 p-1 rounded-lg" />
+          <label
+            htmlFor="toDate"
+            className="text-[#9B9B9B] text-[13px] font-[500]"
+          >
+            To Date :
+          </label>
+          <input
+            type="date"
+            id="toDate"
+            name="toDate"
+            className="mb-1 p-1 rounded-lg"
+            value={props.to_date}
+            onChange={(e) =>
+              props.set_filterDate((prev) => ({
+                ...prev,
+                to_date: new Date(e.target.value).toJSON().slice(0, 10),
+              }))
+            }
+          />
         </div>
       </StyledPopover>
     </>
