@@ -6,18 +6,26 @@ import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { Provider } from "react-redux";
 import { store } from "./app/store";
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
       <Provider store={store}>
         <BrowserRouter>
-          <App /> 
+          <App />
         </BrowserRouter>
       </Provider>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+    </QueryClientProvider>
+    {/* <ReactQueryDevtools initialIsOpen={false} /> */}
   </React.StrictMode>
 );
 

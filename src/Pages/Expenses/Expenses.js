@@ -14,16 +14,18 @@ import {
 } from "../../Api/Finance/FinanceApi";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { deleteAccount } from "../../Api/Accounts/AccountsApi";
 import { openSnackbar } from "../../features/snackbar";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import TransactionList from "../../Components/TransactionList/TransactionList";
 import { AmountFormater } from "../../globalFunctions";
 import NewEntry from "../../Components/Component/NewEntry";
 import ExportBtn from "../../Components/Component/ExportBtn";
+import ZincoEditIcon from "../../Components/Component/ZincoEditIcon";
+import ZincoDeleteIcon from "../../Components/Component/ZincoDeleteIcon";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -39,10 +41,12 @@ const col = [
 ];
 
 const Expenses = () => {
+  const navigate = useNavigate()
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const paramValue = searchParams.get("id");
+  const userRollReducer = useSelector((state) => state.userRole.state);
 
   const [open, setOpen] = React.useState(false);
   const [edit, setEdit] = React.useState(false);
@@ -126,6 +130,8 @@ const Expenses = () => {
       onSuccess: (data) => {
         if (data.StatusCode === 6000) {
           setAccountSummary(data.summary);
+        } else {
+          navigate("/expenses")
         }
       },
     }
@@ -175,7 +181,7 @@ const Expenses = () => {
                 <p className="text-[16px] font-[400]">Expenses</p>
               </div>
 
-              <AddButton onClick={handleOpen} />
+              <AddButton name="expense" onClick={handleOpen} />
             </div>
 
             <div className="grid grid-cols-2 gap-x-2 mb-3">
@@ -285,35 +291,38 @@ const Expenses = () => {
               {/* <p className="mr-[15px] text-[#868686] text-[13px] font-[400]">User role</p> */}
               {financeAccount && (
                 <>
-                  <IconButton
+                  <ZincoEditIcon
+                    name="expense"
                     aria-label="delete"
                     color="error"
                     sx={{ color: "#3634A8" }}
                     onClick={() => {
                       editAccountDetails();
                     }}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
+                  />
+                    {/* <EditIcon />
+                  </IconButton> */}
+                  <ZincoDeleteIcon
+                  name="expense"
                     aria-label="delete"
                     color="error"
                     sx={{ color: "#3634A8" }}
                     onClick={() => {
                       deleteAccountFun.mutate({ id: paramValue });
                     }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+                  />
+                    {/* <DeleteIcon />
+                  </IconButton> */}
                 </>
               )}
               <ExportBtn JSONData={financeAccount?.data || financeListData?.data} filename={financeAccount?.summary?.account_name || "Expenses"} />
-              <StyledButton
+              {<StyledButton
+                disabled={!userRollReducer.expense.save_permission}
                 onClick={() => handleOpenTransition()}
                 startIcon={<AddRoundedIcon />}
               >
                 Transactions
-              </StyledButton>
+              </StyledButton>}
             </div>
           </div>
 
@@ -323,7 +332,7 @@ const Expenses = () => {
                 !financeAccountLoading &&
                 (financeAccount?.data || financeListData?.data) && (
                   <TransactionList
-                    whoAmI={"EX"}
+                    whoAmI={"expense"}
                     setIsEditExpenses={setIsEdit}
                     transData={financeAccount?.data || financeListData?.data}
                     setTransactionData={setTransactionData}

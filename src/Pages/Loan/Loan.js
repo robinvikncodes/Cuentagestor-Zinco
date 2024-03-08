@@ -22,17 +22,21 @@ import { useQuery, useQueryClient, useInfiniteQuery, useMutation } from "react-q
 import { deleteLoans, listLoans, viewLoans } from "../../Api/Loan/LoanApi";
 import moment from "moment";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import PayLoanPaymentModal from "./Components/PayLoanPaymentModal";
 import { openSnackbar } from "../../features/snackbar";
 import { AmountFormater } from "../../globalFunctions";
+import ZincoEditIcon from "../../Components/Component/ZincoEditIcon";
+import ZincoDeleteIcon from "../../Components/Component/ZincoDeleteIcon";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
 const Loan = () => {
+
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   const navigate = useNavigate()
+  const userRollReducer = useSelector(state => state.userRole.state)
   const [searchParams] = useSearchParams();
   const paramValue = searchParams.get("id");
 
@@ -89,9 +93,11 @@ const Loan = () => {
         // console.log(res);
         // setSelectExpenses(res.data[0]);
         // setExpensesList(res.data);
-        // if (res.StatusCode === 6000) {
-        //   setListAccount(res.data);
-        // }
+        if (res.StatusCode === 6000) {
+          // setListAccount(res.data);
+        } else {
+          navigate("/loan")
+        }
       },
     }
   );
@@ -151,7 +157,7 @@ const Loan = () => {
                     10,00.000.00
                   </p>
                 </div> */}
-                <AddButton onClick={() => setOpenAddLoan(true)} />
+                <AddButton name="loan" onClick={() => setOpenAddLoan(true)} />
               </div>
             </div>
 
@@ -220,22 +226,24 @@ const Loan = () => {
                 </div>
                 {loanData.data.duration - loanData.data.pending_emi !== parseInt(loanData.data.duration) && 
                 <div className="flex">
-                  <IconButton
+                  <ZincoEditIcon
+                    name="loan"
                     aria-label="delete"
                     color="error"
                     sx={{ color: "#3634A8" }}
                     onClick={() => editLoan()}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
+                  />
+                    {/* <EditIcon />
+                  </IconButton> */}
+                  <ZincoDeleteIcon
+                  name="loan"
                     aria-label="delete"
                     color="error"
                     sx={{ color: "#3634A8" }}
                     onClick={() => loanDelFun()}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+                  />
+                    {/* <DeleteIcon />
+                  </ZincoDeleteIcon> */}
                 </div>}
               </div>
 
@@ -255,9 +263,9 @@ const Loan = () => {
                         @{AmountFormater(loanData.data.interest)}%
                       </span>
                       {loanData.data.payment_type === "0"
-                        ? "For " + loanData.data.duration
+                        ? "For " + loanData.data.duration + " months"
                         : "Till " +
-                          moment(loanData.data.payment_date).format(" Do ")}
+                          moment(loanData.data.payment_date).format("DD/MM/YYYY")}
                     </p>
 
                     {loanData.data.payment_type === "0" && (
@@ -304,6 +312,7 @@ const Loan = () => {
                       Close Loan
                     </Button>} */}
                     {loanData.data.loan_status !== "1" ? <Button
+                    disabled={!userRollReducer.loan.edit_permission}
                       sx={{
                         borderRadius: "15px",
                         backgroundColor: "#3633A8",
@@ -430,6 +439,7 @@ const Loan = () => {
                       </div>
                     </div>
                     {loanData.data.loan_status !== "1" && <BlueButton
+                      disabled={!userRollReducer.loan.edit_permission}
                       onClick={() =>
                         payLoanFun({
                           amount: "",
@@ -540,7 +550,7 @@ const Loan = () => {
                               </TableCell>
                               <TableCell align="right">
                                 {!row.status ? (
-                                  <BlueButton
+                                  userRollReducer.loan.edit_permission && <BlueButton
                                     disabled={i === 0 ? false : loanData.schedule[i - 1]?.status === true
                                       ? false
                                       : !row?.status && !row?.is_initial}

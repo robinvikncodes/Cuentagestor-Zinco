@@ -35,11 +35,15 @@ import TransferTransaction from "./Components/TransferTransaction";
 import NewEntry from "../../Components/Component/NewEntry";
 import ExportBtn from "../../Components/Component/ExportBtn";
 import { AmountFormater } from "../../globalFunctions";
+import AccountCard from "../../Components/Component/AccountCard";
+import ZincoEditIcon from "../../Components/Component/ZincoEditIcon";
+import ZincoDeleteIcon from "../../Components/Component/ZincoDeleteIcon";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
 const Accounts = () => {
   const reducer = useSelector((state) => state.setting.settingDetails);
+  const userRollReducer = useSelector((state) => state.userRole.state);
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -56,13 +60,13 @@ const Accounts = () => {
   const [transactionData, setTransactionData] = useState({});
   const [filterDate, setFilterDate] = React.useState({
     from_date: "",
-    to_date: ""
-  })
+    to_date: "",
+  });
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
     setIsEditAccount(false);
-    queryClient.invalidateQueries("account-details-dashboard")
+    queryClient.invalidateQueries("account-details-dashboard");
   };
 
   const [openContact, setOpenContact] = React.useState(false);
@@ -74,9 +78,9 @@ const Accounts = () => {
   const handleCloseExpenses = () => {
     setOpenExpenses(false);
     setIsEditExpenses(false);
-    queryClient.invalidateQueries("account-details-dashboard")
-    queryClient.invalidateQueries(["call-account-data", paramValue])
-    queryClient.invalidateQueries(["account-transationData", paramValue])
+    queryClient.invalidateQueries("account-details-dashboard");
+    queryClient.invalidateQueries(["call-account-data", paramValue]);
+    queryClient.invalidateQueries(["account-transationData", paramValue]);
   };
 
   const [openIncome, setOpenIncome] = React.useState(false);
@@ -84,9 +88,9 @@ const Accounts = () => {
   const handleCloseIncome = () => {
     setOpenIncome(false);
     setIsEditIncome(false);
-    queryClient.invalidateQueries("account-details-dashboard")
-    queryClient.invalidateQueries(["call-account-data", paramValue])
-    queryClient.invalidateQueries(["account-transationData", paramValue])
+    queryClient.invalidateQueries("account-details-dashboard");
+    queryClient.invalidateQueries(["call-account-data", paramValue]);
+    queryClient.invalidateQueries(["account-transationData", paramValue]);
   };
 
   const [openTransfer, setOpenTransfer] = React.useState(false);
@@ -94,9 +98,9 @@ const Accounts = () => {
   const handleCloseTransfer = () => {
     setOpenTransfer(false);
     setIsEditTransfer(false);
-    queryClient.invalidateQueries("account-details-dashboard")
-    queryClient.invalidateQueries(["call-account-data", paramValue])
-    queryClient.invalidateQueries(["account-transationData", paramValue])
+    queryClient.invalidateQueries("account-details-dashboard");
+    queryClient.invalidateQueries(["call-account-data", paramValue]);
+    queryClient.invalidateQueries(["account-transationData", paramValue]);
   };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -112,9 +116,12 @@ const Accounts = () => {
   const openPoper = Boolean(anchorEl);
   const id = openPoper ? "simple-popover" : undefined;
 
-  const { isLoading, error, data } = useQuery("account-details-dashboard", () => {
-    return dashboardDetails();
-  });
+  const { isLoading, error, data } = useQuery(
+    "account-details-dashboard",
+    () => {
+      return dashboardDetails();
+    }
+  );
 
   const accountData = useQuery(
     ["call-account-data", paramValue],
@@ -124,6 +131,7 @@ const Accounts = () => {
       onSuccess: (data) => {
         console.log(data);
         if (data.StatusCode !== 6000) {
+          navigate("/contact");
         } else {
           setAccountDetail(data);
         }
@@ -133,8 +141,12 @@ const Accounts = () => {
 
   const transationData = useQuery(
     ["account-transationData", paramValue],
-    () => listAccountFinance({ account_id: paramValue,         from_date: filterDate.from_date,
-      to_date: filterDate.to_date, }),
+    () =>
+      listAccountFinance({
+        account_id: paramValue,
+        from_date: filterDate.from_date,
+        to_date: filterDate.to_date,
+      }),
     {
       enabled: !!paramValue,
       onSuccess: (data) => {
@@ -172,7 +184,12 @@ const Accounts = () => {
           })
         );
         queryClient.invalidateQueries({
-          queryKey: ["account-details-dashboard", "call-account-data", "account-transationData", paramValue],
+          queryKey: [
+            "account-details-dashboard",
+            "call-account-data",
+            "account-transationData",
+            paramValue,
+          ],
         });
         setAccountDetail(null);
         navigate("/accounts");
@@ -183,10 +200,9 @@ const Accounts = () => {
   useEffect(() => {
     // console.log(filterDate);
     if (filterDate.from_date && filterDate.to_date) {
-      transationData.refetch()
+      transationData.refetch();
     }
-  }, [filterDate])
-
+  }, [filterDate]);
 
   return (
     <>
@@ -195,98 +211,110 @@ const Accounts = () => {
           <div className="h-full w-full rounded-[15px] border-[1px] border-[#E7E7E7] bg-white p-[16px]">
             <div className="flex justify-between items-center mb-5">
               <p className="text-[16px] font-[400]">Accounts</p>
-              <AddButton onClick={() => handleOpen()} />
+              <AddButton name={"account"} onClick={() => handleOpen()} />
             </div>
 
-            <div className="w-full bg-white rounded-[9px] border-[#E4E4E4] border-[1px] flex justify-between items-center px-[16px] py-[13px] mb-3">
-              <div className="flex justify-center items-center">
-                <div className="bg-[#F1FFF0] p-[10px] rounded-[13px] mr-[10px]">
-                  <img src={Icone.WalletGreenIcon} alt="" />
+            {userRollReducer.account_balance.view_permission && (
+              <div className="w-full bg-white rounded-[9px] border-[#E4E4E4] border-[1px] flex justify-between items-center px-[16px] py-[13px] mb-3">
+                <div className="flex justify-center items-center">
+                  <div className="bg-[#F1FFF0] p-[10px] rounded-[13px] mr-[10px]">
+                    <img src={Icone.WalletGreenIcon} alt="" />
+                  </div>
+                  <p className="text-black font-[400] text-[16px]">Cash</p>
                 </div>
-                <p className="text-black font-[400] text-[16px]">Cash</p>
-              </div>
 
-              <div className="flex justify-center items-center">
-                {/* <p className="text-[#9B9B9B] text-[16px] font-[400] mr-1">
+                <div className="flex justify-center items-center">
+                  {/* <p className="text-[#9B9B9B] text-[16px] font-[400] mr-1">
                   SAR
                 </p>
                 <p className="text-[19px] font-[500]">{!isLoading && data.total_bank_balance}</p> */}
-                {isLoading ? (
-                  <Skeleton variant="text" height={26} width={150} />
-                ) : (
-                  <>
-                    <p className="text-[#9B9B9B] text-[16px] font-[400] mr-1">
-                      {userData.country_details.currency_simbol}
-                    </p>
-                    <p className="text-[19px] font-[500]">
-                      {AmountFormater(data?.data?.total_cash_balance) || "00.00"}
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="w-full bg-white rounded-[9px] border-[#E4E4E4] border-[1px] flex justify-between items-center px-[16px] py-[13px] mb-3">
-              <div className="flex justify-center items-center">
-                <div className="bg-[#E8F0FF] p-[10px] rounded-[13px] mr-[10px]">
-                  <img src={Icone.BankIcon} alt="" />
+                  {isLoading ? (
+                    <Skeleton variant="text" height={26} width={150} />
+                  ) : (
+                    <>
+                      <p className="text-[#9B9B9B] text-[16px] font-[400] mr-1">
+                        {userData.country_details.currency_simbol}
+                      </p>
+                      <p className="text-[19px] font-[500]">
+                        {AmountFormater(data?.data?.total_cash_balance) ||
+                          "00.00"}
+                      </p>
+                    </>
+                  )}
                 </div>
-                <p className="text-black font-[400] text-[16px]">Bank</p>
               </div>
+            )}
 
-              <div className="flex justify-center items-center">
-                {/* <p className="text-[#9B9B9B] text-[16px] font-[400] mr-1">
+            {userRollReducer.account_balance.view_permission && (
+              <div className="w-full bg-white rounded-[9px] border-[#E4E4E4] border-[1px] flex justify-between items-center px-[16px] py-[13px] mb-3">
+                <div className="flex justify-center items-center">
+                  <div className="bg-[#E8F0FF] p-[10px] rounded-[13px] mr-[10px]">
+                    <img src={Icone.BankIcon} alt="" />
+                  </div>
+                  <p className="text-black font-[400] text-[16px]">Bank</p>
+                </div>
+
+                <div className="flex justify-center items-center">
+                  {/* <p className="text-[#9B9B9B] text-[16px] font-[400] mr-1">
                   SAR
                 </p>
                 <p className="text-[19px] font-[500]">10,000.00</p> */}
-                {isLoading ? (
-                  <Skeleton variant="text" height={26} width={150} />
-                ) : (
-                  <>
-                    <p className="text-[#9B9B9B] text-[16px] font-[400] mr-1">
-                      {userData.country_details.currency_simbol}
-                    </p>
-                    <p className="text-[19px] font-[500]">
-                      {AmountFormater(data?.data?.total_bank_balance) || "00.00"}
-                    </p>
-                  </>
-                )}
+                  {isLoading ? (
+                    <Skeleton variant="text" height={26} width={150} />
+                  ) : (
+                    <>
+                      <p className="text-[#9B9B9B] text-[16px] font-[400] mr-1">
+                        {userData.country_details.currency_simbol}
+                      </p>
+                      <p className="text-[19px] font-[500]">
+                        {AmountFormater(data?.data?.total_bank_balance) ||
+                          "00.00"}
+                      </p>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="overflow-y-scroll h-[66%]">
               <div className="grid grid-cols-3 grid-rows-3 gap-2">
                 {!isLoading &&
                   data?.data?.accounts_list?.map((data, key) => (
-                    <CardButton
+                    // <CardButton
+                    //   key={key + 1}
+                    //   component={Link}
+                    //   to={`/accounts?id=${data.id}`}
+                    // >
+                    //   <div className=" flex flex-col justify-center items-center ">
+                    //     {/* <div className="w-[44px] h-[3px] bg-[#D9D9D9] rounded-[20px] mb-3"></div> */}
+                    //     <p className="text-[#15960A] text-[10px] font-[400]">
+                    //       {data.account_name}
+                    //     </p>
+                    //     {data.account_type === 1 ? (
+                    //       <div className="bg-[#F1FFF0] p-[10px] rounded-[13px] my-[5px] inline-block">
+                    //         <img
+                    //           src={Icone.WalletGreenIcon}
+                    //           alt=""
+                    //           className=""
+                    //         />
+                    //       </div>
+                    //     ) : (
+                    //       <div className="bg-[#E2EFFF] p-[10px] rounded-[13px] my-[5px] inline-block">
+                    //         <img src={Icone.BankIcon} alt="" className="" />
+                    //       </div>
+                    //     )}
+                    //     <p className="text-[10px] font-[400]">
+                    //       {userData.country_details.currency_simbol}{" "}
+                    //       {AmountFormater(data.balance)}
+                    //     </p>
+                    //   </div>
+                    // </CardButton>
+                    <AccountCard
                       key={key + 1}
                       component={Link}
                       to={`/accounts?id=${data.id}`}
-                    >
-                      <div className=" flex flex-col justify-center items-center ">
-                        {/* <div className="w-[44px] h-[3px] bg-[#D9D9D9] rounded-[20px] mb-3"></div> */}
-                        <p className="text-[#15960A] text-[10px] font-[400]">
-                          {data.account_name}
-                        </p>
-                        {data.account_type === 1 ? (
-                          <div className="bg-[#F1FFF0] p-[10px] rounded-[13px] my-[5px] inline-block">
-                            <img
-                              src={Icone.WalletGreenIcon}
-                              alt=""
-                              className=""
-                            />
-                          </div>
-                        ) : (
-                          <div className="bg-[#E2EFFF] p-[10px] rounded-[13px] my-[5px] inline-block">
-                            <img src={Icone.BankIcon} alt="" className="" />
-                          </div>
-                        )}
-                        <p className="text-[10px] font-[400]">
-                          {userData.country_details.currency_simbol}{" "}
-                          {AmountFormater(data.balance)}
-                        </p>
-                      </div>
-                    </CardButton>
+                      data={data}
+                    />
                   ))}
               </div>
             </div>
@@ -320,16 +348,18 @@ const Accounts = () => {
                     {isLoading ? (
                       <Skeleton variant="text" height={26} width={150} />
                     ) : (
-                      <>
-                        <p className="text-[#9B9B9B] text-[16px] font-[400] mr-1">
-                          {userData.country_details.currency_simbol}
-                        </p>
-                        <p className="text-[19px] font-[500]">
-                          {/* {accountDetail?.data.balance */}
-                          {AmountFormater(accountDetail?.data.balance) ||
-                            "00.00"}
-                        </p>
-                      </>
+                      userRollReducer.account_balance.view_permission && (
+                        <>
+                          <p className="text-[#9B9B9B] text-[16px] font-[400] mr-1">
+                            {userData.country_details.currency_simbol}
+                          </p>
+                          <p className="text-[19px] font-[500]">
+                            {/* {accountDetail?.data.balance */}
+                            {AmountFormater(accountDetail?.data.balance) ||
+                              "00.00"}
+                          </p>
+                        </>
+                      )
                     )}
                   </div>
                 </div>
@@ -352,7 +382,9 @@ const Accounts = () => {
                         <span className="text-[#9B9B9B] text-[15px] font-[400]">
                           {userData.country_details.currency_simbol}
                         </span>{" "}
-                        {AmountFormater(accountDetail.data.amount_details.total_zakath)}
+                        {AmountFormater(
+                          accountDetail.data.amount_details.total_zakath
+                        )}
                       </p>
                     </div>
                   )}
@@ -365,7 +397,9 @@ const Accounts = () => {
                         <span className="text-[#9B9B9B] text-[15px] font-[400]">
                           {userData.country_details.currency_simbol}
                         </span>{" "}
-                        {AmountFormater(accountDetail.data.amount_details.total_interest)}
+                        {AmountFormater(
+                          accountDetail.data.amount_details.total_interest
+                        )}
                       </p>
                     </div>
                   )}
@@ -385,35 +419,44 @@ const Accounts = () => {
               <div className="flex justify-between items-center px-5 pb-5 border-b-[1px] border-[#DEDEDE]">
                 <div className="flex items-center">
                   <p className="text-[16px] font-[400]">Transactions</p>
-                  <NewEntry from_date={filterDate.from_date} to_date={filterDate.to_date} set_filterDate={setFilterDate} />
+                  <NewEntry
+                    from_date={filterDate.from_date}
+                    to_date={filterDate.to_date}
+                    set_filterDate={setFilterDate}
+                  />
                 </div>
                 <div className="flex items-center">
                   {/* <p className="mr-[15px] text-[#868686] text-[13px] font-[400]">User role</p> */}
                   {
                     <>
-                      <IconButton
+                      <ZincoEditIcon
+                        name="account"
                         aria-label="delete"
                         color="error"
                         sx={{ color: "#3634A8" }}
                         onClick={() => {
                           editAccountDetails();
                         }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
+                      />
+                      {/* <EditIcon />
+                      </IconButton> */}
+                      <ZincoDeleteIcon
+                        name="account"
                         aria-label="delete"
                         color="error"
                         sx={{ color: "#3634A8" }}
                         onClick={() => {
                           deleteAccountfun.mutate({ id: paramValue });
                         }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                      />
+                      {/* <DeleteIcon />
+                      </ZincoDeleteIcon> */}
                     </>
                   }
-                  <ExportBtn JSONData={transData?.data} filename={accountDetail.data.account_name} />
+                  <ExportBtn
+                    JSONData={transData?.data}
+                    filename={accountDetail.data.account_name}
+                  />
                   <StyledButton
                     aria-describedby={id}
                     onClick={handleClickPoper}
@@ -438,6 +481,7 @@ const Accounts = () => {
                   >
                     <div className="p-1 flex flex-col rounded-xl w-[180px]">
                       <Button
+                        disabled={!userRollReducer.transfer.save_permission}
                         startIcon={
                           <div className="bg-[#FFEEE8] p-[10px] rounded-[13px] mr-[10px]">
                             <img src={Icone.Transfer} alt="" />
@@ -456,6 +500,7 @@ const Accounts = () => {
                       </Button>
 
                       <Button
+                        disabled={!userRollReducer.expense.save_permission}
                         startIcon={
                           <div className="bg-[#FFEBF0] p-[10px] rounded-[13px] mr-[10px]">
                             <img src={Icone.WalletAdd2Icon} alt="" />
@@ -474,6 +519,7 @@ const Accounts = () => {
                       </Button>
 
                       <Button
+                        disabled={!userRollReducer.income.save_permission}
                         startIcon={
                           <div className="bg-[#E0FFF6] p-[10px] rounded-[13px] mr-[10px]">
                             <img src={Icone.WalletAddIcon} alt="" />
@@ -499,7 +545,7 @@ const Accounts = () => {
                 <div className="h-[67vh] overflow-y-scroll">
                   {!transationData.isLoading && (
                     <TransactionList
-                      whoAmI={"AC"}
+                      whoAmI={"account"}
                       setIsEditExpenses={setIsEditExpenses}
                       setIsEditIncome={setIsEditIncome}
                       transData={transData?.data}

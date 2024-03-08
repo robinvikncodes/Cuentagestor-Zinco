@@ -4,8 +4,9 @@ import Popper from "@mui/base/Popper";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { styled } from "@mui/system";
 // import FilterImg from "../../assets/icones/filter.svg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Icone } from "../../Assets/AssetsLog";
+import { useSelector } from "react-redux";
 // import Arrow from "../../assets/icones/arrowUp.svg"
 
 const StyledPopover = styled(Popover)(({ theme }) => ({
@@ -20,7 +21,9 @@ const StyledPopover = styled(Popover)(({ theme }) => ({
 }));
 
 const NewEntry = (props) => {
+  const userRollReducer = useSelector((state) => state.userRole.state);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [disable, setdisable] = useState(false);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -32,10 +35,18 @@ const NewEntry = (props) => {
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
+  
+  useEffect(() => {
+    if (userRollReducer.transaction_filter !== undefined) {
+      console.log(userRollReducer.transaction_filter.view_permission);
+      setdisable(!userRollReducer.transaction_filter.view_permission);
+    }
+  }, [userRollReducer]);
 
   return (
     <>
       <Button
+      disabled={disable}
         sx={{
           backgroundColor: "#F8F5FF",
           color: "#7F52E8",

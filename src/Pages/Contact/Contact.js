@@ -26,11 +26,13 @@ import {
   listAccountFinance,
 } from "../../Api/Finance/FinanceApi";
 import { openSnackbar } from "../../features/snackbar";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AmountFormater } from "../../globalFunctions";
 import NewEntry from "../../Components/Component/NewEntry";
 import ExportBtn from "../../Components/Component/ExportBtn";
+import ZincoDeleteIcon from "../../Components/Component/ZincoDeleteIcon";
+import ZincoEditIcon from "../../Components/Component/ZincoEditIcon";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
@@ -41,6 +43,7 @@ const Contact = () => {
   const navigate = useNavigate();
 
   const queryClient = useQueryClient();
+  const userRollReducer = useSelector((state) => state.userRole.state);
   const [openTransactions, setOpenTransactions] = useState(false);
   const [openContact, setOpenContact] = useState(false);
   const [enabled, setenabled] = useState(false);
@@ -49,13 +52,13 @@ const Contact = () => {
   const [transData, setTransData] = useState({});
   const [filterDate, setFilterDate] = useState({
     from_date: "",
-    to_date: ""
-  })
+    to_date: "",
+  });
 
   const handleOpenTransactions = () => setOpenTransactions(true);
   const handleCloseTransactions = () => {
     setOpenTransactions(false);
-    setIsEdit(false);
+    setIsEditTrans(false);
     // queryClient.invalidateQueries({  predicate: (query) => { ["contact_account_transaction", "contact-detail-transaction"]).includes(query.queryKey[0])},})
     // queryClient.invalidateQueries({
     //   predicate: (query) => {
@@ -63,14 +66,14 @@ const Contact = () => {
     //   },
     // })
     queryClient.invalidateQueries(["contact_account_transaction"]);
-    queryClient.invalidateQueries(["contact-list"])
-    queryClient.invalidateQueries(["finance_account_details"])
+    queryClient.invalidateQueries(["contact-list"]);
+    queryClient.invalidateQueries(["finance_account_details"]);
   };
 
   const handleOpenContact = () => setOpenContact(true);
   const handleCloseContact = () => {
     setOpenContact(false);
-    setIsEdit(false)
+    setIsEdit(false);
   };
 
   const {
@@ -115,6 +118,8 @@ const Contact = () => {
         if (data.StatusCode === 6000) {
           // setAccountSummary(data.summary)
           setenabled(true);
+        } else {
+          navigate("/contact")
         }
       },
     }
@@ -253,9 +258,9 @@ const Contact = () => {
     // console.log(filterDate);
     if (filterDate.from_date && filterDate.to_date) {
       // refetchTransactions()
-      contactTransaction.refetch()
+      contactTransaction.refetch();
     }
-  }, [filterDate])
+  }, [filterDate]);
 
   return (
     <>
@@ -270,7 +275,7 @@ const Contact = () => {
                 <p className="text-[16px] font-[400]">Contacts</p>
               </div>
 
-              <AddButton onClick={() => handleOpenContact()} />
+              <AddButton name="contact" onClick={() => handleOpenContact()} />
             </div>
 
             <div className="grid grid-cols-2 gap-x-2 mb-[10px]">
@@ -330,10 +335,19 @@ const Contact = () => {
                       <p className="text-[10px] font-[400]">
                         {data.account_name}
                       </p>
-                      {data.photo ?<div className="bg-[#E2EFFF] p-[10px] rounded-full my-[10px] inline-block w-[52px] h-[52px] ">
-                         <img src={BaseUrl + data.photo} alt="" className="" /> 
-                      </div>:
-                      <div className=" flex items-center justify-center my-[10px] w-[52px] h-[52px] "><img src={Icone.PersonalcardIcon} alt="" className=" w-[32px] h-[32px]" /> </div>   }
+                      {data.photo ? (
+                        <div className="bg-[#E2EFFF] p-[10px] rounded-full my-[10px] inline-block w-[52px] h-[52px] ">
+                          <img src={BaseUrl + data.photo} alt="" className="" />
+                        </div>
+                      ) : (
+                        <div className=" flex items-center justify-center my-[10px] w-[52px] h-[52px] ">
+                          <img
+                            src={Icone.PersonalcardIcon}
+                            alt=""
+                            className=" w-[32px] h-[32px]"
+                          />{" "}
+                        </div>
+                      )}
                       <p
                         className={`${
                           data.total_paid > data.total_received
@@ -343,9 +357,11 @@ const Contact = () => {
                       >
                         {userData.country_details.currency_simbol}
                         {"  "}{" "}
-                        {AmountFormater(data.total_paid > data.total_received
-                          ? data.total_paid - data.total_received
-                          : data.total_received - data.total_paid)}
+                        {AmountFormater(
+                          data.total_paid > data.total_received
+                            ? data.total_paid - data.total_received
+                            : data.total_received - data.total_paid
+                        )}
                       </p>
                     </div>
                   ))}
@@ -375,22 +391,24 @@ const Contact = () => {
                   </p>
                 </div>
                 <div className="flex">
-                  <IconButton
+                  <ZincoEditIcon
+                    name="contact"
                     aria-label="delete"
                     color="error"
                     sx={{ color: "#3634A8" }}
                     onClick={() => editContact()}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
+                  />
+                  {/* <EditIcon />
+                  </IconButton> */}
+                  <ZincoDeleteIcon
+                    name="contact"
                     aria-label="delete"
                     color="error"
                     sx={{ color: "#3634A8" }}
                     onClick={() => deleteContactFun()}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+                  />
+                  {/* <DeleteIcon />
+                  </ZincoDeleteIcon> */}
                 </div>
               </div>
 
@@ -520,20 +538,30 @@ const Contact = () => {
               </div>
 
               <div className="flex justify-between items-center px-5 pb-5 border-b-[1px] border-[#DEDEDE]">
-              <div className="flex items-center">
+                <div className="flex items-center">
                   <p className="text-[16px] font-[400]">Transactions</p>
-                  <NewEntry from_date={filterDate.from_date} to_date={filterDate.to_date} set_filterDate={setFilterDate} />
+                  <NewEntry
+                    from_date={filterDate.from_date}
+                    to_date={filterDate.to_date}
+                    set_filterDate={setFilterDate}
+                  />
                 </div>
                 <div className="flex items-center">
                   {/* <p className="mr-[15px] text-[#868686] text-[13px] font-[400]">User role</p> */}
 
-                  <ExportBtn JSONData={contactTransaction?.data?.data} filename={dataContact?.data?.account_name} />
-                  <StyledButton
-                    onClick={() => handleOpenTransactions()}
-                    startIcon={<AddRoundedIcon />}
-                  >
-                    Transactions
-                  </StyledButton>
+                  <ExportBtn
+                    JSONData={contactTransaction?.data?.data}
+                    filename={dataContact?.data?.account_name}
+                  />
+                  {(
+                    <StyledButton
+                      disabled={!userRollReducer.contact.save_permission}
+                      onClick={() => handleOpenTransactions()}
+                      startIcon={<AddRoundedIcon />}
+                    >
+                      Transactions
+                    </StyledButton>
+                  )}
                 </div>
               </div>
 
@@ -560,6 +588,7 @@ const Contact = () => {
                               cursor:
                                 data.from_account_type !== 5 &&
                                 data.to_account_type !== 5 &&
+                                userRollReducer.contact.edit_permission &&
                                 "pointer",
                             }}
                           >
@@ -568,6 +597,7 @@ const Contact = () => {
                               onClick={() =>
                                 data.from_account_type !== 5 &&
                                 data.to_account_type !== 5 &&
+                                userRollReducer.contact.edit_permission &&
                                 editTransition(data)
                               }
                             >
@@ -698,7 +728,7 @@ const Contact = () => {
                             {data.from_account_type !== 5 &&
                               data.to_account_type !== 5 && (
                                 <div>
-                                  <IconButton
+                                  <ZincoDeleteIcon
                                     aria-label="delete"
                                     color="error"
                                     size="small"
@@ -710,10 +740,12 @@ const Contact = () => {
                                         bgcolor: "#CD0A0A",
                                       },
                                     }}
+                                    name="contact"
                                     onClick={() => deleteTransation(data.id)}
-                                  >
-                                    <DeleteIcon sx={{ fontSize: "18px" }} />
-                                  </IconButton>
+                                  />
+                                    {/* <DeleteIcon sx={{ fontSize: "18px" }} />
+                                  </ZincoDeleteIcon> */}
+
                                 </div>
                               )}
                           </div>
@@ -751,19 +783,23 @@ const Contact = () => {
           )}
         </div>
       </div>
-      {openContact && <AddContactModal
-        open={openContact}
-        handleClose={handleCloseContact}
-        edit={isEdit}
-        contactData={dataContact?.data}
-      />}
-      {openTransactions && <AddTransactionsModal
-        open={openTransactions}
-        handleClose={handleCloseTransactions}
-        edit={isEditTrans}
-        contactDetail={dataContact}
-        transData={transData}
-      />}
+      {openContact && (
+        <AddContactModal
+          open={openContact}
+          handleClose={handleCloseContact}
+          edit={isEdit}
+          contactData={dataContact?.data}
+        />
+      )}
+      {openTransactions && (
+        <AddTransactionsModal
+          open={openTransactions}
+          handleClose={handleCloseTransactions}
+          edit={isEditTrans}
+          contactDetail={dataContact}
+          transData={transData}
+        />
+      )}
     </>
   );
 };

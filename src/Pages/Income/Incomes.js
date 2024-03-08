@@ -16,14 +16,16 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { deleteAccount } from "../../Api/Accounts/AccountsApi";
 import { openSnackbar } from "../../features/snackbar";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import TransactionList from "../../Components/TransactionList/TransactionList";
 import { AmountFormater } from "../../globalFunctions";
 import NewEntry from "../../Components/Component/NewEntry";
 import ExportBtn from "../../Components/Component/ExportBtn";
+import ZincoEditIcon from "../../Components/Component/ZincoEditIcon";
+import ZincoDeleteIcon from "../../Components/Component/ZincoDeleteIcon";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -43,8 +45,11 @@ const Incomes = () => {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const paramValue = searchParams.get("id");
+  const navigate = useNavigate()
+  const userRollReducer = useSelector((state) => state.userRole.state);
 
   const [open, setOpen] = React.useState(false);
+  const [financeAccount, setFinanceAccount] = React.useState({})
   const [openTransition, setOpenTransition] = React.useState(false);
   const [transactionData, setTransactionData] = React.useState({});
   const [edit, setEdit] = React.useState(false);
@@ -95,7 +100,7 @@ const Incomes = () => {
     { enabled: !paramValue }
   );
 
-  const { isLoading: financeAccountLoading, data: financeAccount } = useQuery(
+  const { isLoading: financeAccountLoading, } = useQuery(
     ["finance-income-transaction", paramValue],
     () => {
       return listAccountFinance({
@@ -106,7 +111,16 @@ const Incomes = () => {
         to_date: "",
       });
     },
-    { enabled: !!paramValue }
+    { enabled: !!paramValue,
+      onSuccess: res => {
+        if (res.StatusCode === 6000) {
+          setFinanceAccount(res)
+        } 
+        else {
+          navigate("/incomes")
+        }
+      }
+    }
   );
 
   // const editTransaction = function (data) {
@@ -161,7 +175,7 @@ const Incomes = () => {
                 <p className="text-[16px] font-[400]">Incomes</p>
               </div>
 
-              <AddButton onClick={() => handleOpen()} />
+              <AddButton name="income" onClick={() => handleOpen()} />
             </div>
 
             <div className="grid grid-cols-2 gap-x-2 mb-3">
@@ -269,31 +283,34 @@ const Incomes = () => {
               {/* <p className="mr-[15px] text-[#868686] text-[13px] font-[400]">User role</p> */}
               {financeAccount && (
                 <>
-                  <IconButton
+                  <ZincoEditIcon
+                    name="income"
                     aria-label="delete"
                     color="error"
                     sx={{ color: "#3634A8" }}
                     onClick={() => {
                       editAccountDetails();
                     }}
-                  >
-                    <EditIcon />
-                  </IconButton>
+                  />
+                    {/* <EditIcon />
+                  </ZincoEditIcon> */}
 
-                  <IconButton
+                  <ZincoDeleteIcon
+                  name="income"
                     aria-label="delete"
                     color="error"
                     sx={{ color: "#3634A8" }}
                     onClick={() => {
                       deleteAccountFun.mutate({ id: paramValue });
                     }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+                  />
+                    {/* <DeleteIcon />
+                  </IconButton> */}
                 </>
               )}
               <ExportBtn JSONData={financeAccount?.data || financeListData?.data} filename={financeAccount?.summary?.account_name || "Income"} />
               <StyledButton
+              disabled={!userRollReducer.income.save_permission}
                 onClick={() => handleOpenTransition()}
                 startIcon={<AddRoundedIcon />}
               >
@@ -308,7 +325,7 @@ const Incomes = () => {
                 !financeAccountLoading &&
                 (financeAccount?.data || financeListData?.data) && (
                   <TransactionList
-                    whoAmI={"IC"}
+                    whoAmI={"income"}
                     setIsEditIncome={setIsEdit}
                     transData={financeAccount?.data || financeListData?.data}
                     setTransactionData={setTransactionData}

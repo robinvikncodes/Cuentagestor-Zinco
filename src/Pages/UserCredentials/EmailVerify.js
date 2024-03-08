@@ -84,7 +84,9 @@ const EmailVerify = () => {
 
   const resendOtp = function() {
     // // resendEmail()
-    // mutateEmailResend.
+    mutateEmailResend.mutate({
+      email: userData.email
+    })
   }
  
   // useEffect(() => {
@@ -144,7 +146,7 @@ const EmailVerify = () => {
           </p>
         )}
         <div>
-          <SaveButton actives={false}>Resent</SaveButton>
+          <SaveButton actives={false} onClick={resendOtp}>Resent</SaveButton>
           <SaveButton actives={true} onClick={SubmitOTP}>
             {mutation.isLoading ? (
               <CircularProgress

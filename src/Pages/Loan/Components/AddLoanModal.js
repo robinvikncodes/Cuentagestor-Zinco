@@ -14,7 +14,7 @@ import SearchField from "../../../Components/Component/SearchField";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { listAccount } from "../../../Api/Accounts/AccountsApi";
 import { openSnackbar } from "../../../features/snackbar";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   createLoans,
   updateLoans,
@@ -28,6 +28,7 @@ const AddLoan = (props) => {
   const queryClient = useQueryClient();
   const userData = JSON.parse(localStorage.getItem("UserCredentials"));
   const dispatch = useDispatch();
+  const userRollReducer = useSelector(state => state.userRole.state)
 
   const [swap, setSwap] = useState({
     prev: false,
@@ -653,7 +654,7 @@ const AddLoan = (props) => {
                 >
                   Existing
                 </StyledButton>
-                {!submitData.is_amount && (
+                {!submitData.is_amount && userRollReducer.expense.edit_permission && (
                   <StyledButton
                     onClick={() =>
                       setSubmitData({
@@ -769,8 +770,8 @@ const AddLoan = (props) => {
                             )}
 
                             <p className="text-[10px] font-[400]">
-                              {userData.country_details.currency_simbol}
-                              {"  "} {AmountFormater(data.balance)}
+                              {userRollReducer.account_balance.view_permission && userData.country_details.currency_simbol+
+                              "  " + AmountFormater(data.balance)}
                             </p>
                           </div>
                         ))

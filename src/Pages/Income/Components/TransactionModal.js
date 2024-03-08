@@ -39,6 +39,7 @@ const TransactionModal = (props) => {
   const reducer = useSelector((state) => state.setting.settingDetails);
 
   //State
+  const userRollReducer = useSelector(state => state.userRole.state)
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
   const [value, setValue] = useState(0);
@@ -164,6 +165,7 @@ const TransactionModal = (props) => {
             severity: "success",
           })
         );
+        setButtonDisable(false)
         queryClient.invalidateQueries("Incomes-list");
         queryClient.invalidateQueries("details-dashboard");
         props.handleClose();
@@ -207,14 +209,14 @@ const TransactionModal = (props) => {
         })
       );
     } else if (calvalue) {
-      setButtonDisable(false);
+      setButtonDisable(true);
       transactionMutate.mutate(payload);
     }
   };
 
   useEffect(() => {
     if (!props.edit) {
-      setButtonDisable(true);
+      setButtonDisable(false);
       setCalvalue(0);
       setSubmitData({
         is_interest: false,
@@ -351,8 +353,10 @@ const TransactionModal = (props) => {
                   )}
 
                   <p className="text-[10px] font-[400]">
-                    {userData.country_details.currency_simbol}
-                    {"  "} {AmountFormater(data.balance)}
+                    {userRollReducer.account_balance.view_permission &&
+                      userData.country_details.currency_simbol +
+                        "  " +
+                        AmountFormater(data.balance)}
                   </p>
                 </div>
               ))
@@ -639,3 +643,4 @@ const StyledSelect = styled(Select)({
     borderColor: "black",
   },
 });
+

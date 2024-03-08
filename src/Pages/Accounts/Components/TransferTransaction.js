@@ -72,6 +72,10 @@ const TransferTransaction = (props) => {
     from: false,
     to: false,
   });
+  const [searchValue, setSearchValue] = React.useState({
+    from: null,
+    to: null,
+  });
 
   //Handle Functions
   const handleOpenNote = () => setOpenNote(true);
@@ -169,14 +173,16 @@ const TransferTransaction = (props) => {
 
   const callFromAccount = async function (id) {
     // console.log("NOw i am ======================++++++++++++++++++");
-    // setIsLoading({
-    //   ...isLoading,
-    //   from: true,
-    // });
+    setIsLoading({
+      ...isLoading,
+      from: false,
+    });
     listAccount({
       account_type: [1, 2],
       country: id,
+      search: searchValue.from
     }).then((res) => {
+      if (res.StatusCode === 6000 && res.data.length > 0){
       !props.edit &&
         setSelectedAccount({
           ...selectedAccount,
@@ -186,13 +192,13 @@ const TransferTransaction = (props) => {
       setAccountList((prev) => ({
         ...prev,
         fromAccountlist: res.data,
-      }));
-
-      // setIsLoading({
-      //   ...isLoading,
-      //   from: false,
-      // });
+      }));      
+    }
     });
+    // setIsLoading({
+    //   ...isLoading,
+    //   from: true,
+    // });
   };
 
   const callToAccount = async function (id) {
@@ -204,7 +210,9 @@ const TransferTransaction = (props) => {
     listAccount({
       account_type: [1, 2],
       country: id,
+      search: searchValue.to
     }).then((res) => {
+      if (res.StatusCode === 6000 && res.data.length > 0){
       !props.edit &&
         setSelectedAccount((prev) => ({
           ...prev,
@@ -217,7 +225,7 @@ const TransferTransaction = (props) => {
       setIsLoading({
         ...isLoading,
         to: true,
-      });
+      });}
     });
   };
 
@@ -436,7 +444,18 @@ const TransferTransaction = (props) => {
         <div className="p-3">
           <div className="flex justify-between items-center">
             <div className="w-[70%]">
-              <SearchField />
+              <SearchField             
+              placeholder={"search"}
+              width={"100%"}
+              valuen={toggle ? searchValue.from : searchValue.to}
+              onKeyDown={(e) => { if(e.key === "Enter") {toggle ? callFromAccount() : callToAccount()}}}
+              onChange={(e) =>
+                toggle
+                  ? setSearchValue({ ...searchValue, from: e.target.value })
+                  : setSearchValue({ ...searchValue, to: e.target.value })
+              }
+              onClickBTN={() => (!toggle ? callFromAccount() : callToAccount())} 
+            />
             </div>
             {toggle && (
               <FormControl sx={{ m: 1, minWidth: 120 }} size="small">

@@ -22,13 +22,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSettings } from "../../features/setting";
 import ChangePassword from "./Components/ChangePassword";
 import DeleteAccount from "./Components/DeleteAccount";
+import { ArrowRightIcon } from "@mui/x-date-pickers";
 
 let imgFile;
 
 const Setting = () => {
   const settingRedux = useSelector((state) => state.setting.settingDetails);
   const dispatch = useDispatch();
-  console.log(settingRedux);
+  // console.log(settingRedux);
+  const [boole, setBoole] = useState(false);
+  // const [second, setbool] = useState(second)
   const [selectedImage, setSelectedImage] = useState(null);
   const [isLoading, setIsLoading] = useState(settingRedux.isLoading)
   const [editValue, setEditValue] = useState({
@@ -153,7 +156,7 @@ const Setting = () => {
 
   const submitData = (data) => {
     mutation.mutate({ ...data });
-    console.log(data);
+    // console.log(data);
   };
 
   return (
@@ -290,7 +293,7 @@ const Setting = () => {
                                 }, 0);
                               }
                               setEditValue({ ...editValue, username: false });
-                              console.log(editValue);
+                              // console.log(editValue);
                             }}
                           >
                             <EditIcon />
@@ -445,23 +448,27 @@ const Setting = () => {
               </div>
             </div>
 
-            {/* <StyledButton
-            onClick={() => setBoole(true)}
-            endIcon={<ArrowRightRoundedIcon />}
+          <StyledButton
+            onClick={() => setBoole(false)}
+            is_selected = {!boole}
+            // endIcon={<ArrowRightRoundedIcon />}
+            endIcon={<ArrowRightIcon />}
           >
             User
           </StyledButton>
           <StyledButton
-            onClick={() => setBoole(false)}
-            endIcon={<ArrowRightRoundedIcon />}
+             onClick={() => setBoole(true)}
+             is_selected = {boole}
+            // endIcon={<ArrowRightRoundedIcon />}
+            endIcon={<ArrowRightIcon />}
           >
             User role
           </StyledButton>
 
           <div className="flex justify-between items-center rounded-[8px] border-[1px] border-[#E7E7E7] bg-white mb-[7px]">
             <p className="text-[15px] font-[400] px-[18px]">Biometric Login</p>
-            <ZincoSwitch defaultValue={data?.data.is_interest || false} />
-          </div> */}
+            <ZincoSwitch defaultValue={false} />
+          </div>
 
             <div className="flex justify-between items-center rounded-[8px] border-[1px] border-[#E7E7E7] bg-white mb-[7px]">
               <p className="text-[15px] font-[400] px-[18px]">Zakah</p>
@@ -585,7 +592,7 @@ const Setting = () => {
         </div>
 
         <div className="RightContainer w-[72%]">
-          {/* {boole ? <UserRole /> : <User />} */}
+          {boole ? <UserRole /> : <User />}
         </div>
       </div>
       <ChangePassword open={openCP} handleClose={handleCloseCP} />
@@ -596,7 +603,7 @@ const Setting = () => {
 
 export default Setting;
 
-const StyledButton = styled(Button)(() => ({
+const StyledButton = styled(Button)(({is_selected}) => ({
   justifyContent: "space-between",
   width: "100%",
   paddingLeft: "18px",
@@ -604,11 +611,14 @@ const StyledButton = styled(Button)(() => ({
   fontSize: "15px",
   fontWeight: "500",
   color: "#000",
-  backgroundColor: "white",
+  backgroundColor: is_selected ? "#1976d20a" : "white",
   borderRadius: "8px",
   border: "1px solid #E4E4E4",
   textTransform: "none",
   marginBottom: "7px",
+  "&:hover": {
+    backgroundColor: is_selected ? "white": "#1976d20a",
+  }
 }));
 
 const LogoutButton = styled(Button)(() => ({

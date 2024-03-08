@@ -9,11 +9,13 @@ import TransactionList from "../../../Components/TransactionList/TransactionList
 import { useQuery, useQueryClient } from "react-query";
 import { listFinanceTransaction } from "../../../Api/Finance/FinanceApi";
 import NewEntry from "../../../Components/Component/NewEntry";
+import { useSelector } from "react-redux";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
 const Transactions = (props) => {
   const queryClient = useQueryClient()
+  const userRollReducer = useSelector(state => state.userRole.state)
   const [anchorEl, setAnchorEl] = useState(null);
   const [isEditIncome, setIsEditIncome] = useState(false);
   const [isEditExpenses, setIsEditExpenses] = useState(false);
@@ -88,7 +90,7 @@ const Transactions = (props) => {
           <div className="flex items-center">
             {/* <p className="mr-[15px] text-[#868686] text-[13px] font-[400]">User role</p> */}
 
-            <StyledButton startIcon={<AddRoundedIcon />}
+            <StyledButton disabled={!userRollReducer.asset.save_permission} startIcon={<AddRoundedIcon />}
               onClick={handleClickPoper}
             >
               Transactions
@@ -110,6 +112,7 @@ const Transactions = (props) => {
             >
               <div className="p-1 flex flex-col rounded-xl w-[180px]">
                 <Button
+                  disabled={!userRollReducer.expense.save_permission}
                   startIcon={
                     <div className="bg-[#FFEBF0] p-[10px] rounded-[13px] mr-[10px]">
                       <img src={Icone.WalletAdd2Icon} alt="" />
@@ -141,6 +144,7 @@ const Transactions = (props) => {
                     fontWeight: 400,
                   }}
                   onClick={() => handleOpenIncome()}
+                  disabled={!userRollReducer.income.save_permission}
                 >
                   Income
                 </Button>
@@ -151,7 +155,7 @@ const Transactions = (props) => {
 
         <div className="p-[20px]">
         <TransactionList
-        whoAmI={"AS"}
+          whoAmI={"asset"}
           setIsEditExpenses = {setIsEditExpenses}
           setIsEditIncome= {setIsEditIncome}
           transData={transData?.data}

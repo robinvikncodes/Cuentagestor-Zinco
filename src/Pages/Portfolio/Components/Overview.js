@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Icone } from "../../../Assets/AssetsLog";
 import { IconButton, Snackbar } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -20,6 +20,8 @@ import {
 import { openSnackbar } from "../../../features/snackbar";
 import { Doughnut } from "react-chartjs-2";
 import AssetGraph from "./AssetGraph";
+import ZincoEditIcon from "../../../Components/Component/ZincoEditIcon";
+import ZincoDeleteIcon from "../../../Components/Component/ZincoDeleteIcon";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
@@ -48,22 +50,24 @@ const Overview = (props) => {
           </p>
         </div>
         <div className="flex">
-          <IconButton
+          <ZincoEditIcon
+            name="asset"
             aria-label="delete"
             color="error"
             sx={{ color: "#3634A8" }}
             onClick={() => props.editFun()}
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton
+          />
+            {/* <EditIcon />
+          </IconButton> */}
+          <ZincoDeleteIcon
+          name="asset"
             aria-label="delete"
             color="error"
             sx={{ color: "#3634A8" }}
             onClick={() => props.deletFun()}
-          >
-            <DeleteIcon />
-          </IconButton>
+          />
+            {/* <DeleteIcon /> */}
+          {/* </ZincoDeleteIcon> */}
           {boolean && (
             <IconButton
               aria-label="delete"
@@ -237,6 +241,7 @@ const ManinOverview = function (props) {
 const InfoOverview = function ({ assetDetail }) {
   // console.log(assetDetail);
   let file;
+  const userRollReducer = useSelector(state => state.userRole.state)
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   const [openStock, setOpenStock] = useState(false);
@@ -249,11 +254,11 @@ const InfoOverview = function ({ assetDetail }) {
 
   const handleCloseStock = () => {
     setOpenStock(false);
-    seteditProperty(false)
     queryClient.invalidateQueries(["show_Asset_data", assetDetail.data.id]);
   };
   const handleCloseProperty = () => {
     setOpenProperty(false);
+    seteditProperty(false)
     queryClient.invalidateQueries(["show_Asset_data", assetDetail.data.id]);
   };
 
@@ -573,10 +578,10 @@ const InfoOverview = function ({ assetDetail }) {
           <div className="flex justify-between">
             <p className="text-[16px] font-[500] ml-8 my-3">Stock</p>
             <div>
-              <AddButton
+              {userRollReducer.asset.edit_permission && <AddButton
                 addbgcolor={"#EEE"}
                 onClick={() => setOpenStock(true)}
-              />
+              />}
             </div>
           </div>
           {assetDetail.data.asset_details === null ? (
@@ -628,6 +633,7 @@ const InfoOverview = function ({ assetDetail }) {
 
                 {i !== 0 && (
                   <IconButton
+                    disabled={!userRollReducer.asset.edit_permission}
                     aria-label="delete"
                     color="error"
                     size="small"
@@ -653,10 +659,10 @@ const InfoOverview = function ({ assetDetail }) {
           <div className="flex justify-between">
             <p className="text-[16px] font-[500] ml-8 my-3">Properties</p>
             <div>
-              <AddButton
+              {userRollReducer.asset.edit_permission && <AddButton
                 addbgcolor={"#EEE"}
                 onClick={() => setOpenProperty(true)}
-              />
+              />}
             </div>
           </div>
           {assetDetail.data.custom_properties === null ? (
@@ -685,6 +691,7 @@ const InfoOverview = function ({ assetDetail }) {
                 </div>
 
                 <IconButton
+                disabled={!userRollReducer.asset.edit_permission}
                   aria-label="delete"
                   color="error"
                   size="small"
@@ -709,7 +716,7 @@ const InfoOverview = function ({ assetDetail }) {
           <div className="flex justify-between">
             <p className="text-[16px] font-[500] ml-8 my-3">Documents</p>
             <div>
-              <AddButton addbgcolor={"#EEE"} onClick={addFile} />
+              {userRollReducer.asset.edit_permission && <AddButton addbgcolor={"#EEE"} onClick={addFile} />}
               <input
                 style={{ display: "none" }}
                 accept=".xlsx,.xls,.doc, .docx,.ppt, .pptx,.txt,.pdf"
@@ -740,6 +747,7 @@ const InfoOverview = function ({ assetDetail }) {
                 </p>
 
                 <IconButton
+                  disabled={!userRollReducer.asset.edit_permission}
                   aria-label="delete"
                   color="error"
                   size="small"

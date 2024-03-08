@@ -17,7 +17,7 @@ import {
 import { BaseUrl } from "../../globalVariable";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { openSnackbar } from "../../features/snackbar";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AmountFormater } from "../../globalFunctions";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
@@ -28,6 +28,7 @@ const Portfolio = () => {
   const paramValue = searchParams.get("id");
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const userRollReducer = useSelector((state) => state.userRole.state);
 
   const [boolean, setBoolean] = useState(true);
   const [edit, setEdit] = useState(false);
@@ -179,7 +180,7 @@ const Portfolio = () => {
                     {AmountFormater(data?.summary?.total_value)}
                   </p>
                 </div>
-                <AddButton onClick={() => handleOpen()} />
+                <AddButton name="asset" onClick={() => handleOpen()} />
               </div>
             </div>
 
@@ -236,6 +237,7 @@ const Portfolio = () => {
               </StyledToggleButton>
               <div className="mr-3"></div>
               <StyledToggleButton
+                // disabled={userRollReducer?.asset.save_permission}
                 active={!boolean}
                 onClick={() => setBoolean(false)}
               >

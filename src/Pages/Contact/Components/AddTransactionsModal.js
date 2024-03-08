@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { listAccount } from "../../../Api/Accounts/AccountsApi";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   createListTransaction,
   detailFinance,
@@ -45,6 +45,7 @@ const AddTransactionsModal = (props) => {
   const queryClient = useQueryClient();
 
   // State Declarations 📦📦📦
+  const userRollReducer = useSelector(state => state.userRole.state)
   const [value, setValue] = useState(0);
   const [date, setDate] = useState(new Date().toISOString().substr(0, 10));
   const [openNote, setOpenNote] = useState(false);
@@ -364,8 +365,8 @@ const AddTransactionsModal = (props) => {
                               />
                             </div>
                             <p className="text-[10px] font-[400]">
-                              {userData.country_details.currency_simbol}
-                              {"  "} {AmountFormater(data.balance)}
+                              {userRollReducer.account.view_permission && userData.country_details.currency_simbol +
+                              "  " + AmountFormater(data.balance)}
                             </p>
                           </div>
                         ) : (
@@ -384,8 +385,8 @@ const AddTransactionsModal = (props) => {
                               <img src={Icone.BankIcon} alt="" className="" />
                             </div>
                             <p className="text-[10px] font-[400]">
-                              {userData.country_details.currency_simbol}{" "}
-                              {AmountFormater(data.balance)}
+                              {userRollReducer.account.view_permission && userData.country_details.currency_simbol + " " +
+                              AmountFormater(data.balance)}
                             </p>
                           </div>
                         )}

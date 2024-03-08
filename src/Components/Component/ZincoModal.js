@@ -27,6 +27,11 @@ const ZincoModal = (props) => {
     onClose={() => props.handleClose()}
     aria-labelledby="modal-modal-title"
     aria-describedby="modal-modal-description"
+    sx={{
+      "& .MuiBackdrop-root": {
+        backdropFilter: props.is_blur ? "blur(4px)" : "none", // Adjust the blur value as needed
+      },
+    }}
   >
     <Box sx={style}>
         {props.children}

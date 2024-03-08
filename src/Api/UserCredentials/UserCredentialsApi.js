@@ -40,6 +40,14 @@ const deleteUserAccount = async function (body) {
   return res.data;
 };
 
+
+const invitedUser = async function (body) {
+  const { data } = await axios.post("v1/organizations/accept-invitation/", {
+    ...body,
+  });
+  return data;
+};
+
 export {
   countryLists,
   createUser,
@@ -48,5 +56,6 @@ export {
   resendEmail,
   resetPassword,
   resetPasswordOTP,
-  deleteUserAccount
+  deleteUserAccount,
+  invitedUser
 };
