@@ -3,7 +3,7 @@ import SearchField from "../../../Components/Component/SearchField";
 import { listAssets } from "../../../Api/Assets/AssetsApi";
 import { Icone, Images } from "../../../Assets/AssetsLog";
 import { Link, useNavigate } from "react-router-dom";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { Button, Skeleton } from "@mui/material";
 import { BaseUrl } from "../../../globalVariable";
 import styled from "@emotion/styled";
@@ -11,7 +11,8 @@ import { AmountFormater } from "../../../globalFunctions";
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 const Portfolio = () => {
   const navigate = useNavigate();
-
+  const queryClient = useQueryClient();
+  const [searchValue, setSearchValue] = React.useState('')
 
   const returnType = function(type) {
     switch (type) {
@@ -36,9 +37,7 @@ const Portfolio = () => {
     }
   }
 
-  const { isLoading, error, data } = useQuery("assets-list", () => {
-    return listAssets({ page_number: 1, page_size: 8 });
-  });
+  const { isLoading, error, data, refetch } = useQuery(["assets-list"], () =>  listAssets({ page_number: 1, page_size: 8, search: searchValue}));
 
   return (
     <div className="border-[1px] rounded-[22px] border-[#E4E4E4] p-[12px] h-full">
@@ -63,7 +62,15 @@ const Portfolio = () => {
       </div>
 
       <div className="flex justify-between items-center mb-2">
-        <SearchField placeholder={"Search Portfolio"} />
+        <SearchField
+          placeholder={"Search Portfolio"}
+          valuen={searchValue}
+          onKeyDown={(e) =>
+            e.key === "Enter" && refetch()
+          }
+          onChange={(e) => setSearchValue(e.target.value)}
+          onClickBTN={() => refetch()}
+        />
         <p
           className="text-[12px] font-[400] text-[#7F52E8] cursor-pointer"
           onClick={() => navigate("/portfolio")}
@@ -94,12 +101,10 @@ const Portfolio = () => {
                 component={Link}
                 to={`/portfolio?id=${data.id}`}
               >
-                <div
-                  className="rounded-[14px] p-[2px] flex flex-col justify-center items-center"
-                >
+                <div className="rounded-[14px] p-[2px] flex flex-col justify-center items-center">
                   <p className="text-[10px] font-[400]">{data.asset_name}</p>
                   <img
-                    src={data.photo ? BaseUrl + data.photo: Images.AssetImage}
+                    src={data.photo ? BaseUrl + data.photo : Images.AssetImage}
                     alt=""
                     className="w-[80px] h-[80px] rounded-[3px] my-1"
                   />
@@ -112,7 +117,6 @@ const Portfolio = () => {
           )}
         </div>
       </div>
-
     </div>
   );
 };

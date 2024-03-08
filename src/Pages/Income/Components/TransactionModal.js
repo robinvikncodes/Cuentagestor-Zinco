@@ -39,7 +39,7 @@ const TransactionModal = (props) => {
   const reducer = useSelector((state) => state.setting.settingDetails);
 
   //State
-  const userRollReducer = useSelector(state => state.userRole.state)
+  const userRollReducer = useSelector((state) => state.userRole.state);
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
   const [value, setValue] = useState(0);
@@ -69,6 +69,10 @@ const TransactionModal = (props) => {
     reminder_date: "",
   });
   const [openReminder, setOpenReminder] = useState(false);
+  const [searchValue, setSearchValue] = React.useState({
+    from: null,
+    to: null,
+  });
 
   // Handle Functions
   const handleOpenNote = () => setOpenNote(true);
@@ -85,12 +89,12 @@ const TransactionModal = (props) => {
   };
 
   // Data Fetching
-  const { isLoading: isLoadingCandB } = useQuery(
+  const { isLoading: isLoadingCandB, refetch: refetchAccount } = useQuery(
     "cash&bank_list",
-    () => listAccount({ account_type: [1, 2] }),
+    () => listAccount({ account_type: [1, 2], search: searchValue.to }),
     {
       onSuccess: (res) => {
-        if (res.StatusCode === 6000) {
+        if (res.StatusCode === 6000 && res.data.length > 0 ) {
           setTransaction((prev) => ({ ...prev, candb: res.data }));
           !props.edit &&
             setSelected((prev) => ({ ...prev, candb: res.data[0] })); // Only set when edit is tru from the prop
@@ -99,12 +103,12 @@ const TransactionModal = (props) => {
     }
   );
 
-  const { isLoading: isLoadingExpenses } = useQuery(
+  const { isLoading: isLoadingExpenses, refetch: refetchLedger } = useQuery(
     "expenses_list",
-    () => listAccount({ account_type: [3] }),
+    () => listAccount({ account_type: [3], search: searchValue.from }),
     {
       onSuccess: (res) => {
-        if (res.StatusCode === 6000) {
+        if (res.StatusCode === 6000 && res.data.length > 0) {
           setTransaction((prev) => ({ ...prev, expenses: res.data }));
           !props.edit &&
             setSelected((prev) => ({ ...prev, expenses: res.data[0] }));
@@ -165,7 +169,7 @@ const TransactionModal = (props) => {
             severity: "success",
           })
         );
-        setButtonDisable(false)
+        setButtonDisable(false);
         queryClient.invalidateQueries("Incomes-list");
         queryClient.invalidateQueries("details-dashboard");
         props.handleClose();
@@ -275,7 +279,22 @@ const TransactionModal = (props) => {
         </div>
 
         <div className="p-3">
-          <SearchField />
+          
+        <SearchField
+            placeholder={"search"}
+            width={"100%"}
+            valuen={toggle ? searchValue.from : searchValue.to}
+            onKeyDown={(e) =>{
+             if(e.key === "Enter") { !toggle ? refetchAccount() : refetchLedger() }
+            }}
+            onChange={(e) =>
+              toggle
+                ? setSearchValue({ ...searchValue, from: e.target.value })
+                : setSearchValue({ ...searchValue, to: e.target.value })
+            }
+            onClickBTN={() => (!toggle ? refetchAccount() : refetchLedger())}
+          />
+
           {/* <div className="grid grid-cols-2 gap-x-3 my-3">
             <ToggleButton
               mbgcolor={toggle ? "#7F52E8" : "#F8F5FF"}

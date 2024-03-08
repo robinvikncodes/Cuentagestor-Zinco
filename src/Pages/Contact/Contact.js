@@ -448,7 +448,7 @@ const Contact = () => {
                       ) : (
                         <>
                           <span className=" text-[14px] font-[500]">
-                            {userData?.country_details?.currency_simbol}
+                            {userData.country_details.currency_simbol}
                           </span>
                           .
                           {AmountFormater(
@@ -469,11 +469,11 @@ const Contact = () => {
                       ) : (
                         <>
                           <span className=" text-[14px] font-[500]">
-                            {userData?.country_details?.currency_simbol}
+                            {userData.country_details.currency_simbol}
                           </span>
                           .
                           {AmountFormater(
-                            contactTransaction?.data.contact_summary?.total_paid
+                            contactTransaction?.data?.contact_summary?.total_paid
                           )}
                         </>
                       )}
@@ -568,7 +568,7 @@ const Contact = () => {
               <div className="p-[20px]">
                 <div className="h-[59vh] overflow-y-scroll">
                   {!contactTransaction.isLoading &&
-                    contactTransaction.data.data.map((obj, key) => (
+                    contactTransaction?.data?.data.map((obj, key) => (
                       <div key={key + 1}>
                         <div className="flex items-center mb-5">
                           <div className="p-[10px] bg-[#F1FFF0] mr-3 rounded-[13px]">
@@ -593,7 +593,7 @@ const Contact = () => {
                             }}
                           >
                             <div
-                              className="flex justify-between w-[100%] "
+                              className="flex justify-between w-[100%]"
                               onClick={() =>
                                 data.from_account_type !== 5 &&
                                 data.to_account_type !== 5 &&

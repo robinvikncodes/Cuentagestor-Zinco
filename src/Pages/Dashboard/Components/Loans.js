@@ -5,7 +5,7 @@ import { Button } from "@mui/material";
 import styled from "@emotion/styled";
 import SearchField from "../../../Components/Component/SearchField";
 import { Link } from "react-router-dom";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { listLoans } from "../../../Api/Loan/LoanApi";
 import moment from "moment";
 import AddLoan from "../../Loan/Components/AddLoanModal";
@@ -13,14 +13,16 @@ import { AmountFormater } from "../../../globalFunctions";
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
 const Loans = () => {
+  const queryClient = useQueryClient();
+  const [searchValue, setSearchValue] = React.useState(null)
   const [listLoan, setListLoan] = useState([]);
   const [openAddLoan, setOpenAddLoan] = useState(false);
 
   const handleCloseLoan = () => setOpenAddLoan(false);
 
-  const { isLoading: loanListLoading } = useQuery(
-    "lona_list_Dashboard",
-    () => listLoans({ page_number: 1, page_size: 7 }),
+  const { isLoading: loanListLoading, refetch } = useQuery(
+    ["lona_list_Dashboard"],
+    () => listLoans({ page_number: 1, page_size: 7, search: searchValue }),
     {
       onSuccess: (res) => {
         // console.log(res);
@@ -45,14 +47,21 @@ const Loans = () => {
               <p className="text-black font-[400] text-[16px]">Loans</p>
             </div>
 
-            <SearchField width={"269px"} placeholder={"Search Loans"} />
+            <SearchField 
+              width={"269px"} 
+              placeholder={"Search Loans"} 
+              valuen={searchValue}
+              onKeyDown={(e) =>  (e.key === "Enter") && refetch()} 
+              onChange={e => setSearchValue(e.target.value)}
+              onClickBTN={() => refetch()}
+            />
           </div>
 
           <div className="flex items-center">
             <p className="text-[12px] font-[400] text-[#7F52E8] mr-2">
               Add Loan
             </p>
-            <AddButton onClick={() => setOpenAddLoan(true)} />
+            <AddButton name="loan" onClick={() => setOpenAddLoan(true)} />
           </div>
         </div>
         <div className="grid grid-cols-8 gap-[10px]">
@@ -62,6 +71,7 @@ const Loans = () => {
                 key={i + 1}
                 component={Link}
                 to={`/loan?id=${obj.id}`}
+                draggable="true"
               >
                 <div className="flex flex-col justify-center items-center ">
                   {/* <div className="w-[44px] h-[3px] bg-[#D9D9D9] rounded-[20px] mb-3"></div> */}

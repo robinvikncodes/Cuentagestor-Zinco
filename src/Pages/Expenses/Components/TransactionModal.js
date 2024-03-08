@@ -65,6 +65,10 @@ const TransactionModal = (props) => {
     description: "",
     reminder_date: "",
   });
+  const [searchValue, setSearchValue] = React.useState({
+    from: null,
+    to: null,
+  });
 
   //Handle functions
   const handleOpenNote = () => setOpenNote(true);
@@ -82,12 +86,12 @@ const TransactionModal = (props) => {
   };
 
   //Data fetching
-  const { isLoading: isLoadingCandB } = useQuery(
+  const { isLoading: isLoadingCandB, refetch: refetchFrom } = useQuery(
     "cashandbank_list",
-    () => listAccount({ account_type: [1, 2] }),
+    () => listAccount({ account_type: [1, 2], search: searchValue.from  }),
     {
       onSuccess: (res) => {
-        if (res.StatusCode === 6000) {
+        if (res.StatusCode === 6000 && res.data.length > 0) {
           setTransaction(prev => ({ ...prev, candb: res.data }));
           !props.edit && setSelected({ ...selected, candb: res.data[0] }); // Only set when edit is tru from the prop
         }
@@ -95,12 +99,12 @@ const TransactionModal = (props) => {
     }
   );
 
-  const { isLoading: isLoadingExpenses } = useQuery(
+  const { isLoading: isLoadingExpenses, refetch: refetchTo } = useQuery(
     "expenses_list",
-    () => listAccount({ account_type: [4] }),
+    () => listAccount({ account_type: [4], search: searchValue.to }),
     {
       onSuccess: (res) => {
-        if (res.StatusCode === 6000) {
+        if (res.StatusCode === 6000 && res.data.length > 0) {
           setTransaction((prev) => ({ ...prev, expenses: res.data }));
           !props.edit &&
             setSelected((prev) => ({ ...prev, expenses: res.data[0] }));
@@ -330,7 +334,18 @@ const TransactionModal = (props) => {
         </div>
         {/* <p>{!isLoading && data.data[0].account_name}</p> */}
         <div className="p-3">
-          <SearchField />
+          <SearchField             
+            placeholder={"search"}
+            width={"100%"}
+            valuen={toggle ? searchValue.from : searchValue.to}
+            onKeyDown={(e) => { if(e.key === "Enter") {toggle ? refetchFrom() : refetchTo()}}}
+            onChange={(e) =>
+              toggle
+                ? setSearchValue({ ...searchValue, from: e.target.value })
+                : setSearchValue({ ...searchValue, to: e.target.value })
+            }
+            onClickBTN={() => (!toggle ? refetchFrom() : refetchTo())} 
+          />
           {/* <div className="grid grid-cols-2 gap-x-3 my-3">
             <ToggleButton
               mbgcolor={toggle ? "#7F52E8" : "#F8F5FF"}

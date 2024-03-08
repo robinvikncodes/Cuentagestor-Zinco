@@ -26,7 +26,7 @@ import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
 import { css } from "@emotion/react";
 import { createAssets, updateAssets } from "../../../Api/Assets/AssetsApi";
 import { openSnackbar } from "../../../features/snackbar";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { BaseUrl } from "../../../globalVariable";
 import { organization } from "../../../Api/zincoApi";
 import { AmountFormater } from "../../../globalFunctions";
@@ -44,11 +44,14 @@ const selectStyles = css`
 const AddAssetsModal = (props) => {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
+
+  const userRollReducer = useSelector(state => state.userRole.state)
   const [selectedValue, setSelectedValue] = useState("a");
   const [selectedImage, setSelectedImage] = useState([]);
   const [data, setdata] = useState({
     data: []
   })
+  const [searchValue, setSearchValue] = React.useState("");
   // const [imagePayLoad, setimagePayLoad] = useState({})
 
 
@@ -134,11 +137,12 @@ const AddAssetsModal = (props) => {
     input.click();
   };
 
-  useQuery(
+  const { refetch } = useQuery(
     "account-list-assets",
-    () =>  listAccount({ account_type: [1, 2]}),
+    () =>  listAccount({ account_type: [1, 2], search: searchValue}),
     {
       onSuccess: (res) => {
+        if (res.StatusCode === 6000 && res.data.length > 0){
         // console.log("I am hear *****************************&&&&&&&&&&&&&&&&&&&7777777");
         setdata(res)
         if (props.edit === true &&  !props.assetData?.data?.asset_details[0]?.pre_owned) {
@@ -159,6 +163,7 @@ const AddAssetsModal = (props) => {
             from_account_name: data.data[0]?.account_name,
           }));
         }
+      }
       },
     }
   );
@@ -406,7 +411,14 @@ const AddAssetsModal = (props) => {
             }}
           />
         </div>
-        <SearchField />
+        <SearchField 
+          placeholder={"search"}
+          width={"100%"}
+          valuen={searchValue}
+          onKeyDown={(e) => e.key === "Enter" && refetch()}
+          onChange={(e) => setSearchValue(e.target.value)}
+          onClickBTN={() => refetch()}
+        />
 
         {!assetDetails.pre_owned && (
           <>
@@ -453,7 +465,7 @@ const AddAssetsModal = (props) => {
                       </>
                     )}
                     <p className="text-[10px] font-[400]">
-                      {userData.country_details.currency_simbol} {AmountFormater(data.balance)}
+                      {userRollReducer.account_balance.view_permission && userData.country_details.currency_simbol + "  " + AmountFormater(data.balance)}
                     </p>
                   </div>
                 </>

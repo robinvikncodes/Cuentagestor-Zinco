@@ -32,11 +32,10 @@ import ZincoDeleteIcon from "../../Components/Component/ZincoDeleteIcon";
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
 const Loan = () => {
-
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
-  const navigate = useNavigate()
-  const userRollReducer = useSelector(state => state.userRole.state)
+  const navigate = useNavigate();
+  const userRollReducer = useSelector((state) => state.userRole.state);
   const [searchParams] = useSearchParams();
   const paramValue = searchParams.get("id");
 
@@ -47,6 +46,7 @@ const Loan = () => {
   const [openPayLoan, setopenPayLoan] = useState(false);
   const [is_edit, setIs_edit] = useState(false);
   const [payloanData, setpayLoanData] = useState({});
+  const [searchValue, setSearchValue] = React.useState(null);
 
   const handleCloseLoan = () => {
     setOpenAddLoan(false);
@@ -64,14 +64,14 @@ const Loan = () => {
     setdata.accouxnt = loanData.data.id;
     setdata.loan_name = loanData.data.loan_name;
     setdata.payment_type = loanData.data.payment_type;
-    setdata.account = loanData.data.account
+    setdata.account = loanData.data.account;
     setpayLoanData(setdata);
     setopenPayLoan(true);
   };
 
-  const { isLoading: loanListLoading } = useQuery(
+  const { isLoading: loanListLoading, refetch } = useQuery(
     "lona_list",
-    () => listLoans({ page_number: 1, page_size: 20 }),
+    () => listLoans({ page_number: 1, page_size: 20, search: searchValue }),
     {
       onSuccess: (res) => {
         // console.log(res);
@@ -96,7 +96,7 @@ const Loan = () => {
         if (res.StatusCode === 6000) {
           // setListAccount(res.data);
         } else {
-          navigate("/loan")
+          navigate("/loan");
         }
       },
     }
@@ -123,15 +123,15 @@ const Loan = () => {
             severity: "success",
           })
         );
-        queryClient.invalidateQueries("lona_list")
-        navigate('/loan')
+        queryClient.invalidateQueries("lona_list");
+        navigate("/loan");
       }
     },
   });
 
-  const loanDelFun = function() {
-    deleteLoan.mutate({ id: paramValue})
-  }
+  const loanDelFun = function () {
+    deleteLoan.mutate({ id: paramValue });
+  };
 
   return (
     <>
@@ -163,7 +163,14 @@ const Loan = () => {
 
             {/*  */}
 
-            <SearchField placeholder={"search"} width={"100%"} />
+            <SearchField
+              placeholder={"search"}
+              width={"100%"}
+              valuen={searchValue}
+              onKeyDown={(e) => e.key === "Enter" && refetch()}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onClickBTN={() => refetch()}
+            />
 
             <div className="overflow-y-scroll h-[85%]">
               <div className="grid mt-3 grid-cols-3 grid-rows-3 gap-3">
@@ -198,8 +205,7 @@ const Loan = () => {
                         </p>
                         <p className="text-[#F2385E] text-[10px] font-[400]">
                           {userData.country_details.currency_simbol}{" "}
-                          {AmountFormater(obj.outstanding_amount) ||
-                            "00.00"}
+                          {AmountFormater(obj.outstanding_amount) || "00.00"}
                         </p>
                         {/* <p className="text-[#888] text-[10px] font-[400]">
                   {userData.country_details.currency_simbol} 4,000
@@ -224,27 +230,29 @@ const Loan = () => {
                     {loanData.data.loan_name}
                   </p>
                 </div>
-                {loanData.data.duration - loanData.data.pending_emi !== parseInt(loanData.data.duration) && 
-                <div className="flex">
-                  <ZincoEditIcon
-                    name="loan"
-                    aria-label="delete"
-                    color="error"
-                    sx={{ color: "#3634A8" }}
-                    onClick={() => editLoan()}
-                  />
+                {loanData.data.duration - loanData.data.pending_emi !==
+                  parseInt(loanData.data.duration) && (
+                  <div className="flex">
+                    <ZincoEditIcon
+                      name="loan"
+                      aria-label="delete"
+                      color="error"
+                      sx={{ color: "#3634A8" }}
+                      onClick={() => editLoan()}
+                    />
                     {/* <EditIcon />
                   </IconButton> */}
-                  <ZincoDeleteIcon
-                  name="loan"
-                    aria-label="delete"
-                    color="error"
-                    sx={{ color: "#3634A8" }}
-                    onClick={() => loanDelFun()}
-                  />
+                    <ZincoDeleteIcon
+                      name="loan"
+                      aria-label="delete"
+                      color="error"
+                      sx={{ color: "#3634A8" }}
+                      onClick={() => loanDelFun()}
+                    />
                     {/* <DeleteIcon />
                   </ZincoDeleteIcon> */}
-                </div>}
+                  </div>
+                )}
               </div>
 
               <div className=" flex px-[20px]">
@@ -265,7 +273,9 @@ const Loan = () => {
                       {loanData.data.payment_type === "0"
                         ? "For " + loanData.data.duration + " months"
                         : "Till " +
-                          moment(loanData.data.payment_date).format("DD/MM/YYYY")}
+                          moment(loanData.data.payment_date).format(
+                            "DD/MM/YYYY"
+                          )}
                     </p>
 
                     {loanData.data.payment_type === "0" && (
@@ -275,7 +285,10 @@ const Loan = () => {
                           On every
                         </span>
                         <span className=" text-black text-[12px] font-[500] ">
-                          {moment(loanData?.schedule[1]?.date || loanData?.schedule[0]?.date).format("Do")}
+                          {moment(
+                            loanData?.schedule[1]?.date ||
+                              loanData?.schedule[0]?.date
+                          ).format("Do")}
                         </span>
                       </p>
                     )}
@@ -311,54 +324,57 @@ const Loan = () => {
                     >
                       Close Loan
                     </Button>} */}
-                    {loanData.data.loan_status !== "1" ? <Button
-                    disabled={!userRollReducer.loan.edit_permission}
-                      sx={{
-                        borderRadius: "15px",
-                        backgroundColor: "#3633A8",
-                        textTransform: "none",
-                        fontSize: "12px",
-                        fontWeight: "400",
-                        color: "white",
-                        minWidth: "110px",
-                        "&:hover": {
+                    {loanData.data.loan_status !== "1" ? (
+                      <Button
+                        disabled={!userRollReducer.loan.edit_permission}
+                        sx={{
+                          borderRadius: "15px",
                           backgroundColor: "#3633A8",
-                        },
-                      }}
-                      onClick={() =>
-                        payLoanFun({
-                          amount:
-                            loanData.data.payment_type === "0"
-                              ? loanData.data.outstanding_amount
-                              : parseInt(loanData.data.loan_amount),
-                          is_close_loan: true,
-                          date: loanData.data.date,
-                          is_LateFee: false
-                        })
-                      }
-                    >
-                      Close Loan
-                    </Button> : 
-                    <Button
-                    disabled 
-                      sx={{
-                        borderRadius: "15px",
-                        backgroundColor: "#15960A",
-                        textTransform: "none",
-                        fontSize: "12px",
-                        fontWeight: "400",
-                        color: "white",
-                        minWidth: "110px",
-                        "&:hover": {
-                          backgroundColor: "#15960A",
-                        },
-                        "&.Mui-disabled": {
+                          textTransform: "none",
+                          fontSize: "12px",
+                          fontWeight: "400",
                           color: "white",
+                          minWidth: "110px",
+                          "&:hover": {
+                            backgroundColor: "#3633A8",
+                          },
+                        }}
+                        onClick={() =>
+                          payLoanFun({
+                            amount:
+                              loanData.data.payment_type === "0"
+                                ? loanData.data.outstanding_amount
+                                : parseInt(loanData.data.loan_amount),
+                            is_close_loan: true,
+                            date: loanData.data.date,
+                            is_LateFee: false,
+                          })
                         }
-                      }}
-                    >
-                      Loan Closed
-                    </Button>}
+                      >
+                        Close Loan
+                      </Button>
+                    ) : (
+                      <Button
+                        disabled
+                        sx={{
+                          borderRadius: "15px",
+                          backgroundColor: "#15960A",
+                          textTransform: "none",
+                          fontSize: "12px",
+                          fontWeight: "400",
+                          color: "white",
+                          minWidth: "110px",
+                          "&:hover": {
+                            backgroundColor: "#15960A",
+                          },
+                          "&.Mui-disabled": {
+                            color: "white",
+                          },
+                        }}
+                      >
+                        Loan Closed
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -384,7 +400,11 @@ const Loan = () => {
                           <span className=" text-[14px] font-[500]">
                             {userData.country_details.currency_simbol}
                           </span>
-                          .{"  "}{AmountFormater(parseInt(loanData.data.loan_amount) + parseInt(loanData.data.total_interest))}
+                          .{"  "}
+                          {AmountFormater(
+                            parseInt(loanData.data.loan_amount) +
+                              parseInt(loanData.data.total_interest)
+                          )}
                         </p>
                       </div>
                     </div>
@@ -438,20 +458,22 @@ const Loan = () => {
                         </p>
                       </div>
                     </div>
-                    {loanData.data.loan_status !== "1" && <BlueButton
-                      disabled={!userRollReducer.loan.edit_permission}
-                      onClick={() =>
-                        payLoanFun({
-                          amount: "",
-                          is_close_loan: false,
-                          payment_type: "1",
-                          date: loanData.data.date,
-                          is_LateFee: false
-                        })
-                      }
-                    >
-                      Pay to Loan
-                    </BlueButton>}
+                    {loanData.data.loan_status !== "1" && (
+                      <BlueButton
+                        disabled={!userRollReducer.loan.edit_permission}
+                        onClick={() =>
+                          payLoanFun({
+                            amount: "",
+                            is_close_loan: false,
+                            payment_type: "1",
+                            date: loanData.data.date,
+                            is_LateFee: false,
+                          })
+                        }
+                      >
+                        Pay to Loan
+                      </BlueButton>
+                    )}
                   </div>
                 )}
               </div>
@@ -470,7 +492,20 @@ const Loan = () => {
                   </div>
                   <div className="rounded-full h-1 w-full bg-[#E4E4E4]">
                     <div
-                    style={{ width : ((loanData.data.duration - loanData.data.pending_emi) / parseInt(loanData.data.duration)) * 100 > 0 ? ((loanData.data.duration - loanData.data.pending_emi) / parseInt(loanData.data.duration)) * 100 + "%" : "0px"}}
+                      style={{
+                        width:
+                          ((loanData.data.duration -
+                            loanData.data.pending_emi) /
+                            parseInt(loanData.data.duration)) *
+                            100 >
+                          0
+                            ? ((loanData.data.duration -
+                                loanData.data.pending_emi) /
+                                parseInt(loanData.data.duration)) *
+                                100 +
+                              "%"
+                            : "0px",
+                      }}
                       className={`rounded-full bg-[#3633A8] h-full z-10`}
                     ></div>
                   </div>
@@ -541,34 +576,49 @@ const Loan = () => {
                                 {/* <p className=" font-[500] text-[12px]">Took</p> */}
                               </TableCell>
                               <TableCell align="center">
-                                {row.down_payment && <> <p className=" text-[#9B9B9B] text-[12px] font-[400]">
-                                  Down payment: 
-                                </p>
-                                <p className="text-[#D10707] font-[500] text-[12px]">
-                                  {row.down_payment}
-                                </p></>}
+                                {row.down_payment && (
+                                  <>
+                                    {" "}
+                                    <p className=" text-[#9B9B9B] text-[12px] font-[400]">
+                                      Down payment:
+                                    </p>
+                                    <p className="text-[#D10707] font-[500] text-[12px]">
+                                      {row.down_payment}
+                                    </p>
+                                  </>
+                                )}
                               </TableCell>
                               <TableCell align="right">
                                 {!row.status ? (
-                                  userRollReducer.loan.edit_permission && <BlueButton
-                                    disabled={i === 0 ? false : loanData.schedule[i - 1]?.status === true
-                                      ? false
-                                      : !row?.status && !row?.is_initial}
-                                    act={
-                                      i === 0 ? false : loanData.schedule[i - 1]?.status === true
-                                        ? false
-                                        : !row?.status && !row?.is_initial
-                                    }
-                                    onClick={() =>
-                                      payLoanFun({
-                                        ...row,
-                                        is_close_loan: false,
-                                        is_LateFee: true
-                                      })
-                                    }
-                                  >
-                                    Pay
-                                  </BlueButton>
+                                  userRollReducer.loan.edit_permission && (
+                                    <BlueButton
+                                      disabled={
+                                        i === 0
+                                          ? false
+                                          : loanData.schedule[i - 1]?.status ===
+                                            true
+                                          ? false
+                                          : !row?.status && !row?.is_initial
+                                      }
+                                      act={
+                                        i === 0
+                                          ? false
+                                          : loanData.schedule[i - 1]?.status ===
+                                            true
+                                          ? false
+                                          : !row?.status && !row?.is_initial
+                                      }
+                                      onClick={() =>
+                                        payLoanFun({
+                                          ...row,
+                                          is_close_loan: false,
+                                          is_LateFee: true,
+                                        })
+                                      }
+                                    >
+                                      Pay
+                                    </BlueButton>
+                                  )
                                 ) : (
                                   <>
                                     <p className=" text-[#9B9B9B] text-[12px] font-[400]">
@@ -648,12 +698,14 @@ const Loan = () => {
         handleClose={handleClosePayLoan}
       />
 
-      {openAddLoan && <AddLoan
-        loanSingle={loanSingle}
-        edit={is_edit}
-        open={openAddLoan}
-        handleClose={handleCloseLoan}
-      />}
+      {openAddLoan && (
+        <AddLoan
+          loanSingle={loanSingle}
+          edit={is_edit}
+          open={openAddLoan}
+          handleClose={handleCloseLoan}
+        />
+      )}
     </>
   );
 };

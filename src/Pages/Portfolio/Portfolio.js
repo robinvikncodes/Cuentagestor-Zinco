@@ -23,7 +23,7 @@ import { AmountFormater } from "../../globalFunctions";
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
 const Portfolio = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const paramValue = searchParams.get("id");
   const navigate = useNavigate();
@@ -36,14 +36,16 @@ const Portfolio = () => {
   const [open, setOpen] = React.useState(false);
   const [assetDataState, setAssetDataState] = useState({});
   const [assetDetails, setAssetDetails] = useState({});
+  const [searchValue, setSearchValue] = React.useState("");
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
     setEdit(false);
   };
 
-  const { isLoading, error, data } = useQuery("assets-list", () => {
-    return listAssets();
+  const { isLoading, data, refetch } = useQuery("assets-list", () => {
+    return listAssets({ search: searchValue });
   });
 
   // const showAssetData = useMutation({
@@ -139,7 +141,7 @@ const Portfolio = () => {
           })
         );
         setIsetPage(false);
-        queryClient.invalidateQueries("assets-list")
+        queryClient.invalidateQueries("assets-list");
         navigate("/portfolio");
       }
     },
@@ -184,7 +186,14 @@ const Portfolio = () => {
               </div>
             </div>
 
-            <SearchField placeholder={"search"} width={"100%"} />
+            <SearchField
+              placeholder={"search"}
+              width={"100%"}
+              valuen={searchValue}
+              onKeyDown={(e) => e.key === "Enter" && refetch()}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onClickBTN={() => refetch()}
+            />
 
             <div className="h-[72vh] overflow-y-auto mt-2">
               <div className="grid mt-3 grid-cols-3 grid-rows-3 gap-3">
@@ -210,9 +219,9 @@ const Portfolio = () => {
                           />
                         ) : (
                           <div className="w-[80px] h-[80px] flex justify-center items-center">
-                          <div className=" p-[10px] rounded-[13px] ">
-                            <img src={Images.AssetImage} alt="" />
-                          </div>
+                            <div className=" p-[10px] rounded-[13px] ">
+                              <img src={Images.AssetImage} alt="" />
+                            </div>
                           </div>
                         )}
                         <p className="text-[10px] font-[400] text-[#7F52E8]">
@@ -263,12 +272,14 @@ const Portfolio = () => {
           </div>
         )}
       </div>
-      {open && <AddAssetsModal
-        open={open}
-        edit={edit}
-        assetData={assetDetails}
-        handleClose={handleClose}
-      />}
+      {open && (
+        <AddAssetsModal
+          open={open}
+          edit={edit}
+          assetData={assetDetails}
+          handleClose={handleClose}
+        />
+      )}
     </>
   );
 };

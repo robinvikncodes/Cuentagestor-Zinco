@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
 import { Button, Skeleton } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Icone } from "../../../Assets/AssetsLog";
 import AddButton from "../../../Components/Component/AddButton";
 import SearchField from "../../../Components/Component/SearchField";
 import AddContactModal from "../../Contact/Components/AddContactModal";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { listContact } from "../../../Api/Contact/ContactApi";
 import { BaseUrl } from "../../../globalVariable";
 import { AmountFormater } from "../../../globalFunctions";
@@ -14,17 +14,24 @@ import { AmountFormater } from "../../../globalFunctions";
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
 const Contact = () => {
-  const [openContact, setOpenContact] = React.useState(false);
+  const queryClient = useQueryClient();
+  const [searchValue, setSearchValue] = useState(null)
+  const [openContact, setOpenContact] = useState(false);
   const handleOpenContact = () => setOpenContact(true);
   const handleCloseContact = () => setOpenContact(false);
+
+  const searchcontact = function (e) {
+    console.log(e.key);
+    // setSearchValue(e.target.value)
+    if (e.key === "Enter") refetch();
+  }
 
   const {
     isLoading: isLoadingList,
     error: errorList,
     data: dataList,
-  } = useQuery("contact-list", () => {
-    return listContact({ page_number: 1, page_size: 7 });
-  });
+    refetch
+  } = useQuery(["contact-list"], () => listContact({ page_number: 1, page_size: 7, search: searchValue }))
 
   return (
     <>
@@ -37,14 +44,21 @@ const Contact = () => {
               </div>
               <p className="text-black font-[400] text-[16px]">Contact</p>
             </div>
-            <SearchField width={"269px"} placeholder={"Search Contact"} />
+            <SearchField 
+              width={"269px"}
+              placeholder={"Search Contact"} 
+              valuen={searchValue}
+              onKeyDown={searchcontact} 
+              onChange={e => setSearchValue(e.target.value)}
+              onClickBTN={() => refetch()}
+            />
           </div>
 
           <div className="flex items-center">
             <p className="text-[12px] font-[400] text-[#7F52E8] mr-2">
               Add contact
             </p>
-            <AddButton onClick={() => handleOpenContact()} />
+            <AddButton name={"contact"} onClick={() => handleOpenContact()} />
           </div>
         </div>
 
@@ -59,7 +73,7 @@ const Contact = () => {
                 {/* <img src={Icone.BankIcon} alt="" className="" /> */}
                 <Skeleton variant="rounded" width={"34px"} height={"34px"} />
               </div>
-              <p className=" text-[#15960A] text-[10px] font-[400] w-full">
+              <p className="text-[#15960A] text-[10px] font-[400] w-full">
                 <Skeleton variant="text" width={"100%"} />
               </p>
             </div>
@@ -69,8 +83,9 @@ const Contact = () => {
                 key={key + 1}
                 component={Link}
                 to={`/contact?id=${jet.id}`}
+                draggable="true" 
               >
-                <div className=" flex flex-col justify-center items-center ">
+                <div className=" flex flex-col justify-center items-center " >
                   <div className="w-[44px] h-[3px] bg-[#D9D9D9] rounded-[20px] mb-3"></div>
                   <p className="text-[10px] font-[400] w-10/12  text-center">
                     {jet.account_name}
@@ -106,7 +121,8 @@ const Contact = () => {
             ))
           )}
 
-          {/* <div className="bg-white flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px]">
+          {/* 
+          <div className="bg-white flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px]">
             <div className="w-[44px] h-[3px] bg-[#D9D9D9] rounded-[20px] mb-3"></div>
             <p className=" text-[10px] font-[400]">Contact Name</p>
             <div className="bg-[#F1FFF0] p-[10px] rounded-[13px] my-[10px] inline-block">
@@ -115,7 +131,8 @@ const Contact = () => {
             <p className="text-[#8B0000] text-[10px] font-[400]">
               SAR 400,00,000,00
             </p>
-          </div> */}
+          </div> 
+          */}
 
           {/* <div className="bg-[#EFE8FF] flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px] ">
         <p className="text-[13px] font-[400] text-[#7F52E8] ">

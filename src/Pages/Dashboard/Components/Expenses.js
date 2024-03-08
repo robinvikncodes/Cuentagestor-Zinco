@@ -8,11 +8,12 @@ import SearchField from "../../../Components/Component/SearchField";
 import ZincoModal from "../../../Components/Component/ZincoModal";
 import ZincoTextField from "../../../Components/Component/ZincoTextField";
 import AddExpenses from "../../Expenses/Components/AddExpenses";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { financeList } from "../../../Api/Finance/FinanceApi";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import { AmountFormater } from "../../../globalFunctions";
+import { listAccount } from "../../../Api/Accounts/AccountsApi";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -28,13 +29,31 @@ const col = [
 ];
 
 const Expenses = () => {
+  const queryClient = useQueryClient();
+  const [searchValue, setSearchValue] = React.useState(null);
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const { isLoading, error, data } = useQuery("Expenses-list", () => {
-    return financeList({ finance_type: 1, page_number: 1, page_size: 9 });
-  });
+  const { isLoading, data,  } = useQuery(["Expenses-list"], () =>
+    financeList({
+      finance_type: 1,
+      page_number: 1,
+      page_size: 1,
+    })
+  );
+  const {
+    isLoading: isLoadingList,
+    data: listData,
+    refetch,
+  } = useQuery("Expenses-list-only", () =>
+    listAccount({
+      account_type: [4],
+      page_number: 1,
+      page_size: 9,
+      search: searchValue,
+    })
+  );
 
   return (
     <>
@@ -67,14 +86,21 @@ const Expenses = () => {
                 {AmountFormater(data?.summary.this_month)}
               </p>
             </div>
-            <SearchField width={"269px"} placeholder={"Search Expenses"} />
+            <SearchField
+              width={"269px"}
+              placeholder={"Search Expenses"}
+              valuen={searchValue}
+              onKeyDown={(e) => e.key === "Enter" && refetch()}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onClickBTN={() => refetch()}
+            />
           </div>
 
           <div className="flex items-center">
             <p className="text-[12px] font-[400] text-[#7F52E8] mr-2">
               Add Expenses
             </p>
-            <AddButton onClick={() => handleOpen()} />
+            <AddButton name="expense" onClick={() => handleOpen()} />
           </div>
         </div>
 
@@ -91,7 +117,9 @@ const Expenses = () => {
                     labels: [],
                     datasets: [
                       {
-                        data: data?.graph_data.map(data => data.amount ?? data.balance),
+                        data: data?.graph_data.map(
+                          (data) => data.amount ?? data.balance
+                        ),
                         backgroundColor: col,
                         borderJoinStyle: "bevel",
                       },
@@ -116,9 +144,12 @@ const Expenses = () => {
             </div>
           </div>
           <div className="grid grid-cols-5 grid-rows-2 gap-[10px]">
-            {isLoading
-              ? [1, 2, 3, 4, 5, 6, 7, 8, 9 ].map((i, key) => (
-                  <div key={key + 1} className="bg-white flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px]">
+            {isLoadingList
+              ? [1, 2, 3, 4, 5, 6, 7, 8, 9].map((i, key) => (
+                  <div
+                    key={key + 1}
+                    className="bg-white flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px]"
+                  >
                     <div className="w-[44px] h-[3px] bg-[#D9D9D9] rounded-[20px] mb-3"></div>
                     <p className="text-[10px] font-[400] w-3/4 ">
                       <Skeleton variant="text" />
@@ -136,22 +167,26 @@ const Expenses = () => {
                     </p>
                   </div>
                 ))
-              : data?.data.map((data, key) => (
-                  <CardButton key={key + 1} component={Link} to={`/expenses?id=${data.id}`}>
-                  <div
-                    className=" flex flex-col justify-center items-center "
+              : listData?.data.map((data, key) => (
+                  <CardButton
+                    key={key + 1}
+                    component={Link}
+                    to={`/expenses?id=${data.id}`}
+                    draggable="true"
                   >
-                    <div className="w-[44px] h-[3px] bg-[#D9D9D9] rounded-[20px] mb-3"></div>
-                    <p className=" text-[10px] font-[400]">
-                      {data.account_name}
-                    </p>
-                    <div className="bg-[#F54040] p-[10px] rounded-[13px] my-[10px] inline-block">
-                      <img src={Icone.WalletAdd1Icon} alt="" className="" />
+                    <div className=" flex flex-col justify-center items-center ">
+                      <div className="w-[44px] h-[3px] bg-[#D9D9D9] rounded-[20px] mb-3"></div>
+                      <p className=" text-[10px] font-[400]">
+                        {data.account_name}
+                      </p>
+                      <div className="bg-[#F54040] p-[10px] rounded-[13px] my-[10px] inline-block">
+                        <img src={Icone.WalletAdd1Icon} alt="" className="" />
+                      </div>
+                      <p className=" text-[10px] font-[400]">
+                        {userData.country_details.currency_simbol}{" "}
+                        {AmountFormater(data.balance)}
+                      </p>
                     </div>
-                    <p className=" text-[10px] font-[400]">
-                    {userData.country_details.currency_simbol} {AmountFormater(data.balance)}
-                    </p>
-                  </div>
                   </CardButton>
                 ))}
 
@@ -161,9 +196,9 @@ const Expenses = () => {
           </p>
         </div> */}
             {/* {isLoading && ( */}
-              <StyledButton component={Link} to="/expenses">
-                View all
-              </StyledButton>
+            <StyledButton component={Link} to="/expenses">
+              View all
+            </StyledButton>
             {/* )} */}
           </div>
         </div>

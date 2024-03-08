@@ -28,7 +28,7 @@ const AddLoan = (props) => {
   const queryClient = useQueryClient();
   const userData = JSON.parse(localStorage.getItem("UserCredentials"));
   const dispatch = useDispatch();
-  const userRollReducer = useSelector(state => state.userRole.state)
+  const userRollReducer = useSelector((state) => state.userRole.state);
 
   const [swap, setSwap] = useState({
     prev: false,
@@ -44,7 +44,7 @@ const AddLoan = (props) => {
   });
 
   const [submitData, setSubmitData] = useState({
-    loanDate: new Date().toJSON().slice(0, 10),
+    loanDate: moment().format("YYYY-MM-DD"),
     loan_name: "",
     loan_amount: "",
     intrest: "",
@@ -70,14 +70,15 @@ const AddLoan = (props) => {
   const [day, setDay] = useState(1);
   const [selectAccount, setSelectAccount] = useState({
     to_account: "",
-    account_name: ""
+    account_name: "",
   });
   const [accountList, setAccountList] = useState([]);
   const [selectExpenses, setSelectExpenses] = useState({
     to_account: "",
-    account_name: ""
+    account_name: "",
   });
   const [expensesList, setExpensesList] = useState([]);
+  const [searchValue, setSearchValue] = React.useState("");
 
   const handleDays = function (event) {
     setDay(event.target.value);
@@ -87,19 +88,33 @@ const AddLoan = (props) => {
     });
   };
 
-  useQuery(
+  const { refetch } = useQuery(
     "accountList_loan_account",
-    () => listAccount({ account_type: [1, 2], page_number: 1, page_size: 8 }),
+    () =>
+      listAccount({
+        account_type: [1, 2],
+        page_number: 1,
+        page_size: 8,
+        search: searchValue,
+      }),
     {
       onSuccess: (res) => {
         // console.log(res.data[0]);
-        if(props.edit &&  !submitData.is_Purchase && !submitData.is_ExistingLoan){
-          let account = res.data.filter(item => item.id === props.loanSingle.to_account)
+        if (res.StatusCode === 6000 && res.data.length > 0) {
+        if (
+          props.edit &&
+          !submitData.is_Purchase &&
+          !submitData.is_ExistingLoan
+        ) {
+          let account = res.data.filter(
+            (item) => item.id === props.loanSingle.to_account
+          );
           setSelectAccount(account[0]);
         } else {
-          setSelectAccount(res.data[0])
+          setSelectAccount(res.data[0]);
         }
         setAccountList(res.data);
+      }
       },
     }
   );
@@ -110,13 +125,21 @@ const AddLoan = (props) => {
     {
       onSuccess: (res) => {
         // console.log(res);
-        if (props.edit && !submitData.is_ExistingLoan && submitData.is_Purchase) {
-          let account = res.data.filter(item => item.id === props.loanSingle.to_account)
-          setSelectExpenses(account[0]);
-        } else {
-          setSelectExpenses(res.data[0]);
+        if (res.StatusCode === 6000) {
+          if (
+            props.edit &&
+            !submitData.is_ExistingLoan &&
+            submitData.is_Purchase
+          ) {
+            let account = res.data.filter(
+              (item) => item.id === props.loanSingle.to_account
+            );
+            setSelectExpenses(account[0]);
+          } else {
+            setSelectExpenses(res.data[0]);
+          }
+          setExpensesList(res.data);
         }
-        setExpensesList(res.data);
       },
     }
   );
@@ -127,10 +150,10 @@ const AddLoan = (props) => {
       let temp = 1;
 
       for (let i = 0; i < parseInt(submitData.durationMonth) + temp; i++) {
-        let newDate = new Date(
-          `${myDate.getFullYear()}-${myDate.getMonth() + 1}-${ day > 8 ? day : day + 1}`
-        );
-        newDate.setMonth(newDate.getMonth() + i);
+        // let newDate = new Date(
+        //   `${myDate.getFullYear()}-${myDate.getMonth() + 1}-${ day > 8 ? day : day + 1}`
+        // );
+        // newDate.setMonth(newDate.getMonth() + i);
 
         // if (
         //   myDate.getMonth() === newDate.getMonth() &&
@@ -139,12 +162,26 @@ const AddLoan = (props) => {
         //   temp = 1;
         //   continue;
         // } else {
-          eata[i - temp] = {
-            date: newDate.toJSON().slice(0, 10),
-            amount: 0,
-            status: false,
-          };
+        // eata[i - temp] = {
+        //   date: newDate.toJSON().slice(0, 10),
+        //   amount: 0,
+        //   status: false,
+        // };
         // }
+
+        let newDate = moment(submitData.loanDate).add(i, "months");
+
+        // if (day <= 8) {
+        //   newDate.date(day + 1);
+        // } else {
+        newDate.date(day);
+        // }
+
+        eata[i - temp] = {
+          date: newDate.format("YYYY-MM-DD"),
+          amount: 0,
+          status: false,
+        };
       }
       setemiData(eata);
     };
@@ -156,7 +193,7 @@ const AddLoan = (props) => {
     mutationFn: (newTodo) => {
       return props.edit
         ? updateLoans({ ...newTodo })
-        : createLoans({ ...newTodo })
+        : createLoans({ ...newTodo });
     },
     onSuccess: (data) => {
       if (data.StatusCode !== 6000) {
@@ -175,16 +212,17 @@ const AddLoan = (props) => {
             severity: "success",
           })
         );
+        setSwap({ prev: false, next: true });
         props.handleClose();
-        queryClient.invalidateQueries(["view_loan", props.loanSingle.id]);
-        queryClient.invalidateQueries("lona_list");
-        setSwap({ prev: false, next: true })
+        queryClient.invalidateQueries(["lona_list"]);
+        queryClient.invalidateQueries(["lona_list_Dashboard"]);
+        queryClient.invalidateQueries(["view_loan", props.loanSingle?.id]);
       }
     },
   });
 
   const passLoan = function (whichButton) {
-    let is_PurchaseVal = false
+    let is_PurchaseVal = false;
     let newReqiredField = { ...reqiredField };
 
     if (submitData.loan_name === "") {
@@ -195,21 +233,24 @@ const AddLoan = (props) => {
       newReqiredField.amount = true;
     }
 
-    if (submitData.intrest === "" || submitData.intrest <= 0) {
+    if (submitData.intrest === "" || submitData.intrest <= -1) {
       newReqiredField.intrest = true;
     }
 
-    if (!submitData.is_amount && (submitData.durationMonth === "" || submitData.durationMonth <=  0)) {
+    if (
+      !submitData.is_amount &&
+      (submitData.durationMonth === "" || submitData.durationMonth <= 0)
+    ) {
       newReqiredField.dueMonth = true;
     }
     // console.log(reqiredField.downPayment,"ttttttt---->" )
 
     // console.log(submitData.down_payment,"is_PurchaseVal===>");
-    if (submitData.is_Purchase && submitData?.down_payment === "")  {
+    if (submitData.is_Purchase && submitData?.down_payment === "") {
       // console.log(submitData.down_payment,"111111222222is_PurchaseVal===>");
 
       newReqiredField.downPayment = true;
-      is_PurchaseVal=true
+      is_PurchaseVal = true;
     }
     // console.log(newReqiredField, " new data field 👍👍👍 👍👍👍");
     setReqiredField(newReqiredField);
@@ -226,8 +267,6 @@ const AddLoan = (props) => {
       !is_PurchaseVal
     ) {
       if (whichButton === "submit") {
-
-
         // console.log(totalAmount);
         if (!submitData.is_amount) {
           let totalAmount = emiData.reduce(function (total, item) {
@@ -274,7 +313,7 @@ const AddLoan = (props) => {
     };
 
     if (props?.loanSingle?.duration === "0") {
-      payload.emi_data = []
+      payload.emi_data = [];
     }
     if (submitData.is_intallment && !submitData.is_Purchase) {
       payload.to_account = selectAccount.id;
@@ -283,7 +322,7 @@ const AddLoan = (props) => {
 
     if (submitData.is_amount) {
       payload.to_account = selectAccount.id;
-      payload.duration = 0
+      payload.duration = 0;
     }
 
     if (submitData.is_Purchase) {
@@ -292,17 +331,25 @@ const AddLoan = (props) => {
     }
 
     if (props.edit) {
-      payload.loan_uuid = props.loanSingle.id
+      payload.loan_uuid = props.loanSingle.id;
     }
 
     mutateLoan.mutate(payload);
   };
 
   useEffect(() => {
-    console.log("Open loan Sammm is hear", props.loanSingle);
+    // console.log(
+    //   "Open loan Sammm is hear",
+    //   props.loanSingle,
+    //   moment(props.loanSingle.date)
+    // );
     if (props.edit) {
       setemiData(props.loanSingle.reminder);
-      setDay(props.loanSingle.duration !== "0" ? moment(props.loanSingle.reminder[0].date).date() : "")
+      setDay(
+        props.loanSingle.duration !== "0"
+          ? moment(props.loanSingle.reminder[0].date).date()
+          : ""
+      );
       setSubmitData({
         loanDate: props.loanSingle.date,
         loan_name: props.loanSingle.loan_name,
@@ -313,7 +360,10 @@ const AddLoan = (props) => {
         durationMonth: props.loanSingle.duration,
         duration: "",
         durationDate: props.loanSingle.payment_date,
-        durationDay: props.loanSingle.duration !== "0" ? moment(props.loanSingle.reminder[0].date).date() : "",
+        durationDay:
+          props.loanSingle.duration !== "0"
+            ? moment(props.loanSingle.reminder[0].date).date()
+            : "",
         processing_fee: parseInt(props.loanSingle.processing_fee),
         is_IncludeLoan: props.loanSingle.is_fee_include_loan,
         is_includeEMI: props.loanSingle.is_fee_include_emi,
@@ -330,7 +380,7 @@ const AddLoan = (props) => {
       // console.log(props.loanSingle.reminder);
     } else {
       setSubmitData({
-        loanDate: new Date().toJSON().slice(0, 10),
+        loanDate: moment().format("YYYY-MM-DD"),
         loan_name: "",
         loan_amount: "",
         intrest: "",
@@ -351,7 +401,7 @@ const AddLoan = (props) => {
         customEMI: false,
         emiAmount: "",
       });
-      setSwap({ prev: false, next: true })
+      setSwap({ prev: false, next: true });
       setemiData([]);
     }
   }, []);
@@ -360,7 +410,9 @@ const AddLoan = (props) => {
     <ZincoModal open={props.open} handleClose={props.handleClose}>
       <div className="pt-[21px] w-[472.5px] ">
         <div className="px-[26px] pb-2 border-b">
-          <p className="text-[16px] font-[400] ">{props.edit ? " Edit Loan" :"Add a Loan"}</p>
+          <p className="text-[16px] font-[400] ">
+            {props.edit ? " Edit Loan" : "Add a Loan"}
+          </p>
         </div>
         <div className="px-[16px] h-[75vh] overflow-y-scroll">
           {swap.next ? (
@@ -411,7 +463,10 @@ const AddLoan = (props) => {
                     onChange={(e) => {
                       setSubmitData({
                         ...submitData,
-                        loan_amount: e.target.value >= 0 ? e.target.value : submitData.loan_amount,
+                        loan_amount:
+                          e.target.value >= 0
+                            ? e.target.value
+                            : submitData.loan_amount,
                       });
                       setReqiredField({
                         ...reqiredField,
@@ -438,7 +493,10 @@ const AddLoan = (props) => {
                     onChange={(e) => {
                       setSubmitData({
                         ...submitData,
-                        intrest: e.target.value >= 0 ? e.target.value : submitData.intrest,
+                        intrest:
+                          e.target.value >= 0
+                            ? e.target.value
+                            : submitData.intrest,
                       });
                       setReqiredField({
                         ...reqiredField,
@@ -507,7 +565,9 @@ const AddLoan = (props) => {
                     onChange={(e) =>
                       setSubmitData({
                         ...submitData,
-                        durationDate: new Date(e.target.value).toJSON().slice(0, 10),
+                        durationDate: new Date(e.target.value)
+                          .toJSON()
+                          .slice(0, 10),
                       })
                     }
                   />
@@ -524,7 +584,10 @@ const AddLoan = (props) => {
                       onChange={(e) => {
                         setSubmitData({
                           ...submitData,
-                          durationMonth: e.target.value >= 0 ? e.target.value :submitData.durationMonth,
+                          durationMonth:
+                            e.target.value >= 0
+                              ? e.target.value
+                              : submitData.durationMonth,
                         });
                         setReqiredField({
                           ...reqiredField,
@@ -654,27 +717,28 @@ const AddLoan = (props) => {
                 >
                   Existing
                 </StyledButton>
-                {!submitData.is_amount && userRollReducer.expense.edit_permission && (
-                  <StyledButton
-                    onClick={() =>
-                      setSubmitData({
-                        ...submitData,
-                        is_Purchase: !submitData.is_Purchase,
-                      })
-                    }
-                    startIcon={
-                      submitData.is_Purchase ? (
-                        <img src={Icone.CheckFillIcon} alt="" />
-                      ) : (
-                        <CircleIcon
-                          sx={{ color: "#999999", fontSize: "25px" }}
-                        />
-                      )
-                    }
-                  >
-                    Purchase
-                  </StyledButton>
-                )}
+                {!submitData.is_amount &&
+                  userRollReducer.expense.edit_permission && (
+                    <StyledButton
+                      onClick={() =>
+                        setSubmitData({
+                          ...submitData,
+                          is_Purchase: !submitData.is_Purchase,
+                        })
+                      }
+                      startIcon={
+                        submitData.is_Purchase ? (
+                          <img src={Icone.CheckFillIcon} alt="" />
+                        ) : (
+                          <CircleIcon
+                            sx={{ color: "#999999", fontSize: "25px" }}
+                          />
+                        )
+                      }
+                    >
+                      Purchase
+                    </StyledButton>
+                  )}
               </div>
 
               {submitData.is_Purchase && (
@@ -685,7 +749,7 @@ const AddLoan = (props) => {
                     className="bg-[#F3F7FC] border border-[#D6D6D6] rounded text-[15px] p-2 w-full"
                     value={submitData.down_payment}
                     onChange={(e) => {
-                      let value = e.target.value?e.target.value:""
+                      let value = e.target.value ? e.target.value : "";
                       setSubmitData({
                         ...submitData,
                         down_payment: value,
@@ -726,7 +790,14 @@ const AddLoan = (props) => {
                     <p className="my-2">Expenses Account</p>
                   )}
 
-                  <SearchField />
+                  <SearchField
+                    placeholder={"search"}
+                    width={"100%"}
+                    valuen={searchValue}
+                    onKeyDown={(e) => e.key === "Enter" && refetch()}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                    onClickBTN={() => refetch()}
+                  />
                   <div className="my-2 grid grid-cols-3 gap-2">
                     {!submitData.is_Purchase
                       ? accountList?.slice(0, 7).map((data, key) => (
@@ -770,8 +841,11 @@ const AddLoan = (props) => {
                             )}
 
                             <p className="text-[10px] font-[400]">
-                              {userRollReducer.account_balance.view_permission && userData.country_details.currency_simbol+
-                              "  " + AmountFormater(data.balance)}
+                              {userRollReducer.account_balance
+                                .view_permission &&
+                                userData.country_details.currency_simbol +
+                                  "  " +
+                                  AmountFormater(data.balance)}
                             </p>
                           </div>
                         ))
@@ -986,18 +1060,21 @@ const AddLoan = (props) => {
             <img src={Icone.ClipIcon} alt="" />
           </IconButton>
 
-          {!submitData.is_Purchase && !submitData.is_ExistingLoan && <div className="flex items-center">
-            <p className="text-[16px] font-[500]">
-              {selectAccount?.account_name}
-            </p>
-          </div>}
+          {!submitData.is_Purchase && !submitData.is_ExistingLoan && (
+            <div className="flex items-center">
+              <p className="text-[16px] font-[500]">
+                {selectAccount?.account_name}
+              </p>
+            </div>
+          )}
 
-          {!submitData.is_ExistingLoan && submitData.is_Purchase && 
-          <div className="flex items-center">
-            <p className="text-[16px] font-[500]">
-              {selectExpenses?.account_name}
-            </p>
-          </div>}
+          {!submitData.is_ExistingLoan && submitData.is_Purchase && (
+            <div className="flex items-center">
+              <p className="text-[16px] font-[500]">
+                {selectExpenses?.account_name}
+              </p>
+            </div>
+          )}
           <div className="flex">
             {swap.prev && (
               <IconButton
