@@ -2,16 +2,25 @@ import { Button, IconButton, SwipeableDrawer } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { Icone, Logo } from "../../Assets/AssetsLog";
 import styled from "@emotion/styled";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [open, setOpen] = useState(false);
   const openDrawer = () => setOpen(true);
   const closeDrawer = () => setOpen(false);
+  const navigate = useNavigate()
 
   const comeToLandingPage = function () {
     // document.getElementById("landingPage").scrollIntoView();
   };
+
+  const handleSignIn = function() {
+    if (JSON.parse(localStorage.getItem("UserCredentials"))) {
+      navigate("dashboard")
+    } else {
+      navigate("login")
+    }
+  }
 
   
   return (
@@ -43,7 +52,7 @@ const Header = () => {
           </ul>
         </nav>
         <div className="right flex justify-between items-center ">
-          <StyleButton variant="text" component={Link} to={"/login"}>
+          <StyleButton variant="text"  onClick={handleSignIn}>
             Sign in
           </StyleButton>
           <div className="mx-3">
@@ -86,7 +95,7 @@ const Header = () => {
         >
           <div className="pb-4">
             <div className="flex justify-between items-center px-4 py-5 border-b-2">
-              <StyleButton variant="text" component={Link} to={"/login"}>
+              <StyleButton variant="text" onClick={handleSignIn}>
                 Sign in
               </StyleButton>
               <StyleButtonBlue

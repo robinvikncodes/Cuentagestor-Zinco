@@ -679,8 +679,8 @@ const InfoOverview = function ({ assetDetail }) {
               <div
                 key={data.id}
                 className="bg-white px-9 py-4 border-[1px] flex items-center justify-between cursor-pointer"
-                onClick={() => handleEditProperty(data)}
               >
+                <div className="w-full" onClick={() => handleEditProperty(data)}>
                 <div className="flex justify-between w-[300px]">
                   <p className="text-[14px] font-[400] text-[#785ED7]">
                     {data.property_name}
@@ -688,6 +688,7 @@ const InfoOverview = function ({ assetDetail }) {
                   <p className="text-[15px] font-[400] ">
                     {data.property_value}
                   </p>
+                </div>
                 </div>
 
                 <IconButton

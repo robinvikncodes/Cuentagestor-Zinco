@@ -54,7 +54,13 @@ const Contact = () => {
     from_date: "",
     to_date: "",
   });
+  const [searchValue, setSearchValue] = useState(null)
 
+  const searchcontact = function (e) {
+    console.log(e.key);
+    // setSearchValue(e.target.value)
+    if (e.key === "Enter") refetch();
+  }
   const handleOpenTransactions = () => setOpenTransactions(true);
   const handleCloseTransactions = () => {
     setOpenTransactions(false);
@@ -80,8 +86,9 @@ const Contact = () => {
     isLoading: isLoadingList,
     error: errorList,
     data: dataList,
+    refetch
   } = useQuery("contact-list", () => {
-    return listContact();
+    return listContact({search: searchValue });
   });
 
   // const {
@@ -321,7 +328,12 @@ const Contact = () => {
               </div>
             </div>
 
-            <SearchField placeholder={"search"} width={"100%"} />
+            <SearchField width={"100%"}
+              placeholder={"Search Contact"} 
+              valuen={searchValue}
+              onKeyDown={searchcontact} 
+              onChange={e => setSearchValue(e.target.value)}
+              onClickBTN={() => refetch()} />
 
             <div className="h-[63%] overflow-y-scroll">
               <div className="grid mt-3 grid-cols-3 grid-rows-3 gap-3 ">

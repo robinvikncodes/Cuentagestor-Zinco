@@ -144,7 +144,7 @@ const Contact = () => {
           </StyledButton>
         </div>
       </div>
-      <AddContactModal open={openContact} handleClose={handleCloseContact} />
+      {openContact && <AddContactModal open={openContact} handleClose={handleCloseContact} />}
     </>
   );
 };

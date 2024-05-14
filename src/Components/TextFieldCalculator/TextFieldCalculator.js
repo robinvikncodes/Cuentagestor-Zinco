@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import React, { Component } from 'react'
 import * as math from "mathjs";
+import { AmountFormater } from "../../globalFunctions";
 
 const TextFieldCalculator = (props) => {
   const [expression, setExpression] = useState("");
@@ -39,7 +40,7 @@ const TextFieldCalculator = (props) => {
       case "number":
       case "boolean":
         setOutput(result);
-        props.setCalvalue(result)
+        props.setCalvalue(AmountFormater(result))
         break;
       default:
         props.setCalvalue(0);

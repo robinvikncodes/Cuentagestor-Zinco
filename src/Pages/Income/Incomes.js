@@ -226,14 +226,14 @@ const Incomes = () => {
                 </div>
 
                 <div className="mt-3">
-                  {data?.graph_data.map((data, key) => (
+                  {data?.graph_data.map((item, key) => (
                     <div key={key + 1} className="flex items-center">
                       <div
                         className="h-[11px] w-[11px] rounded-md mr-2"
                         style={{ backgroundColor: col[key] }}
                       />
                       <span className="text-[#858585] text-[14px] font-[400]">
-                        {data.amount ?? AmountFormater(data.balance)} % {data.account_name}
+                        {Math.round(((item.amount ?? item.balance) / data?.summary.total) * 100)} % {item.account_name}
                       </span>
                     </div>
                   ))}

@@ -68,6 +68,7 @@ const AddTransactionsModal = (props) => {
   const [accountList, setAccountList] = useState({
     data: [],
   });
+  const [searchValue, setSearchValue] = React.useState(null);
 
   // Event Handlers 🛠️🛠️🛠️
   const handleChange = (event, newValue) => {
@@ -103,14 +104,16 @@ const AddTransactionsModal = (props) => {
   };
 
   // Data Fetching 🚀🚀🚀
-  const { isLoading } = useQuery(
+  const { isLoading, refetch: refetchAccount } = useQuery(
     "account-list",
-    () => listAccount({ account_type: [1, 2] }),
+    () => listAccount({ account_type: [1, 2], search: searchValue }),
     {
       onSuccess: (res) => {
-        !props.edit && setSelAccount(res.data[0]);
-        console.log(res);
-        setAccountList(res);
+        if (res.StatusCode === 6000 && res.data.length > 0){
+          !props.edit && setSelAccount(res.data[0]);
+          console.log(res);
+          setAccountList(res);
+        }
       },
     }
   );
@@ -298,7 +301,17 @@ const AddTransactionsModal = (props) => {
         </div>
 
         <div className="p-3">
-          <SearchField />
+          {!button.contact && <SearchField 
+            placeholder={"Search Account"}
+            width={"100%"}
+            valuen={searchValue}
+            onKeyDown={(e) =>{
+             if(e.key === "Enter") { refetchAccount() }
+            }}
+            onChange={(e) => setSearchValue( e.target.value )
+            }
+            onClickBTN={() =>  refetchAccount()}
+          />}
           <div className="grid grid-cols-2 gap-x-3 my-3">
             <ToggleButton
               mbgcolor={button.account ? "#7F52E8" : "#F8F5FF"}
@@ -427,7 +440,7 @@ const AddTransactionsModal = (props) => {
           </IconButton>
           <div className="flex items-center">
             <p className="text-[16px] font-[500]">
-              {selAccount.account_name || payloadID.accountId.account_name}
+              {selAccount?.account_name || payloadID?.accountId?.account_name}
             </p>
           </div>
           <IconButton disabled={!calValue} onClick={submitTransaction}>

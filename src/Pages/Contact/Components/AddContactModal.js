@@ -159,6 +159,7 @@ const AddContactModal = (props) => {
         photo: null,
         account_name: "",
       });
+      setSelectedImage(null)
     }
     
     if (!props.edit) {
@@ -168,6 +169,7 @@ const AddContactModal = (props) => {
         photo: null,
         account_name: "",
       });
+      setSelectedImage(null)
     }
   }, [props.contactData, props.edit]);
 

@@ -78,7 +78,7 @@ const DeleteAccount = (props) => {
               placeholder={"Password"}
               error={errorMsg}
               required
-              isPassword={true}
+              ispassword={true}
               onChange={(e) =>
                 setPassword({ ...password, password1: e.target.value })
               }
@@ -88,7 +88,7 @@ const DeleteAccount = (props) => {
               placeholder={"Confirm password"}
               error={errorMsg}
               required
-              isPassword={true}
+              ispassword={true}
               onChange={(e) =>
                 setPassword({ ...password, password2: e.target.value })
               }

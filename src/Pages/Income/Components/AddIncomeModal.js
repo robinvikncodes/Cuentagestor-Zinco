@@ -56,7 +56,7 @@ const AddIncomeModal = (props) => {
         setOpen(true);
         props.handleClose();
         useQuery.invalidateQueries("Incomes-list");
-
+        useQuery.invalidateQueries("Incomes-list-only");
         setUserData({
           account_type: 3,
           account_name: "",

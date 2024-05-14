@@ -23,20 +23,25 @@ const StockAdd = (props) => {
   const [candb, setCandb] = useState([]);
   const [select, setSelect] = useState({});
   const [date, setDate] = useState(new Date().toISOString().substr(0, 10));
+  const [searchValue, setSearchValue] = React.useState(null);
 
   //Data fetching
-  const { isLoading: isLoadingCandB } = useQuery(
+  const { isLoading: isLoadingCandB, refetch: refetchAccount } = useQuery(
     "cash&bank_list",
-    () => listAccount({ account_type: [1, 2] }),
+    () => listAccount({ account_type: [1, 2], search: searchValue }),
     {
       onSuccess: (res) => {
         if (res.StatusCode === 6000) {
-          setCandb(res.data);
-          !props.edit && setSelect(res.data[0]); // Only set when edit is tru from the prop
-          if (props.edit) {
-            let account = res.data.filter(item => item.id === props.stockData.from_account)
-            setSelect(account[0])
-            // console.log(account, res.data, props.stockData.id, ">>>>>>>>>>>>>><<<<<<<<<<<<<<<<<))(((((()00");
+          if (res.StatusCode === 6000 && res.data.length > 0) {
+            setCandb(res.data);
+            !props.edit && setSelect(res.data[0]); // Only set when edit is tru from the prop
+            if (props.edit) {
+              let account = res.data.filter(
+                (item) => item.id === props.stockData.from_account
+              );
+              setSelect(account[0]);
+              // console.log(account, res.data, props.stockData.id, ">>>>>>>>>>>>>><<<<<<<<<<<<<<<<<))(((((()00");
+            }
           }
         }
       },
@@ -44,7 +49,8 @@ const StockAdd = (props) => {
   );
 
   const stockMutate = useMutation({
-    mutationFn: (newData) => props.edit ? editStock(newData) : addStock(newData),
+    mutationFn: (newData) =>
+      props.edit ? editStock(newData) : addStock(newData),
     onSuccess: (data) => {
       if (data.StatusCode === 6000) {
         dispatch(
@@ -70,7 +76,6 @@ const StockAdd = (props) => {
   const submitTransaction = function () {
     let now = new Date();
     let payload = {
-      
       share: values.share,
       value: values.value,
       pre_owned: false,
@@ -79,12 +84,12 @@ const StockAdd = (props) => {
     };
 
     if (props.edit) {
-      payload.asset_detail_id = props.stockData.id
-      payload.pre_owned = props.stockData.pre_owned
-      payload.as_on_date = props.stockData.as_on_date
-      payload.account_id = select.id
+      payload.asset_detail_id = props.stockData.id;
+      payload.pre_owned = props.stockData.pre_owned;
+      payload.as_on_date = props.stockData.as_on_date;
+      payload.account_id = select.id;
     } else {
-      payload.asset_id= props.asset_id
+      payload.asset_id = props.asset_id;
     }
     stockMutate.mutate(payload);
   };
@@ -111,7 +116,10 @@ const StockAdd = (props) => {
             className="border bg-[#F3F7FC] p-[8px] text-[12px] rounded-md w-1/2 mr-1"
             placeholder="Share %"
             value={values.share}
-            onChange={(e) => e.target.value <= 100 && setValues({ ...values, share: e.target.value })}
+            onChange={(e) =>
+              e.target.value <= 100 &&
+              setValues({ ...values, share: e.target.value })
+            }
           />
           <input
             type="number"
@@ -121,14 +129,25 @@ const StockAdd = (props) => {
             onChange={(e) => setValues({ ...values, value: e.target.value })}
           />
         </div>
-        <SearchField />
+        <SearchField
+          placeholder={"Search Account"}
+          width={"100%"}
+          valuen={searchValue}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              refetchAccount();
+            }
+          }}
+          onChange={(e) => setSearchValue(e.target.value)}
+          onClickBTN={() => refetchAccount()}
+        />
         <div className=" w-[472.5px] h-[255px] overflow-y-auto mt-2">
           <div className="mt-3 grid grid-cols-4 grid-rows-2 gap-2">
             {!isLoadingCandB ? (
               candb.map((data, key) => (
                 <div
                   style={{
-                    backgroundColor: data.id === select.id && "#F6F6F6",
+                    backgroundColor: data?.id === select?.id && "#F6F6F6",
                   }}
                   onClick={() => setSelect(data)}
                   className="bg-white  flex flex-col justify-center items-center rounded-[15px] border-[1px] border-[#E7E7E7] p-[10px] py-4 cursor-pointer"
@@ -180,10 +199,8 @@ const StockAdd = (props) => {
           <img src={Icone.ClipIcon} alt="" />
         </IconButton>
         <div className="flex items-center">
-            <p className="text-[16px] font-[500]">
-              {select?.account_name}
-            </p>
-          </div>
+          <p className="text-[16px] font-[500]">{select?.account_name}</p>
+        </div>
         <IconButton onClick={submitTransaction}>
           <img src={Icone.CheckIcon} alt="" />
         </IconButton>

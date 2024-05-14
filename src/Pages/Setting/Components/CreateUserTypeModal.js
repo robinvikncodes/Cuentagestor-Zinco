@@ -83,7 +83,7 @@ const CreateUserTypeModal = (props) => {
               placeholder={"Password"}
               error={errorMsg}
               required
-              isPassword={true}
+              ispassword={true}
               onChange={(e) => setUserName(e.target.value)}
             /> */}
             <p className="text-[16px] font-[400] mb-5">Add User Type </p>

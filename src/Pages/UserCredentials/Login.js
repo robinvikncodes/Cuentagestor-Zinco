@@ -89,7 +89,7 @@ const Login = () => {
               onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
               type={"text"}
               required
-              isPassword={true}
+              ispassword={true}
             />
           </div>
 

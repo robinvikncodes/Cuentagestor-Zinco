@@ -64,6 +64,7 @@ const AddExpenses = (props) => {
         setOpen(true);
         props.handleClose();
         useQuery.invalidateQueries('Expenses-list')
+        useQuery.invalidateQueries('Expenses-list-only')
         setUserData({
           id: "",
           account_type: 4,

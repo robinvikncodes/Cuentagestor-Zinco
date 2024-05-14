@@ -154,7 +154,7 @@ const AddAssetsModal = (props) => {
           // console.log(account[0].account_name,"<====account[0].account_name");
           setAssetDetails(prev => ({
             ...prev,
-            from_account_name: account[0].account_name,
+            from_account_name: account[0]?.account_name,
           }));
         }else {
           setAssetDetails(prev => ({
@@ -411,14 +411,14 @@ const AddAssetsModal = (props) => {
             }}
           />
         </div>
-        <SearchField 
+        {!assetDetails.pre_owned && <SearchField 
           placeholder={"search"}
           width={"100%"}
           valuen={searchValue}
           onKeyDown={(e) => e.key === "Enter" && refetch()}
           onChange={(e) => setSearchValue(e.target.value)}
           onClickBTN={() => refetch()}
-        />
+        />}
 
         {!assetDetails.pre_owned && (
           <>

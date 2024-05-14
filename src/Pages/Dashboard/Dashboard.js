@@ -94,7 +94,7 @@ const Dashboard = () => {
                       {userData.country_details.currency_simbol}
                     </p>
                     <p className="text-[19px] font-[500]">
-                      {data?.data?.month_income !== isNaN
+                      {data?.data?.month_income === null
                         ? "00.00"
                         : AmountFormater(data?.data?.month_income)}
                     </p>

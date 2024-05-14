@@ -129,6 +129,10 @@ const ExportPDF = function (data, filename) {
 };
 
 const AmountFormater = function (num) {
+  
+  if (num === undefined || num === null || num === "" || isNaN(num)) {
+    return num;
+  }
   // if (typeof num !== "number" ) {
   const state = store.getState();
   const { rounding, currency } = state.setting.settingDetails;

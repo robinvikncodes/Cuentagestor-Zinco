@@ -108,9 +108,10 @@ function App() {
               onClose={handleClose}
             >
               <Alert
+                elevation={1}
                 onClose={handleClose}
                 severity={snackData.severity}
-                sx={{ width: "100%" }}
+                sx={{ minWidth: "300px" }}
               >
                 {snackData.message}
               </Alert>

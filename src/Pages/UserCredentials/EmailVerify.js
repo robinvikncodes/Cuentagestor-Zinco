@@ -7,6 +7,7 @@ import { useMutation } from "react-query";
 import { addUser } from "../../features/credentials";
 import { Images } from "../../Assets/AssetsLog";
 import { resendEmail, userVerify } from "../../Api/UserCredentials/UserCredentialsApi";
+import { openSnackbar } from "../../features/snackbar";
 
 const EmailVerify = () => {
   const userData = useSelector(state => state.credentials.userDetails);
@@ -15,6 +16,8 @@ const EmailVerify = () => {
 
   const [values, setValues] = useState(Array(6).fill(""));
   const [invalidOTP, setInvalidOTP] = useState(false)
+
+  const [counter, setCounter] = React.useState(30);
 
   const handleKeyDown = (e, index) => {
     if (e.key >= "0" && e.key <= "9") {
@@ -43,7 +46,15 @@ const EmailVerify = () => {
     onSuccess: (data) => {
       console.log(data);
       if (data.StatusCode !== 6000) {
-        setInvalidOTP(true)
+        // setInvalidOTP(true)
+        setValues(Array(6).fill(""))
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: data.message,
+            severity: "warning",
+          })
+        );
       } else {
         // localStorage.setItem("UserCredentials", userData);
         userData.newUser && navigate('/login')
@@ -59,11 +70,25 @@ const EmailVerify = () => {
     onSuccess: (data) => {
       console.log(data);
       if (data.StatusCode !== 6000) {
-        setInvalidOTP(true)
-      } else {
+        // setInvalidOTP(true)
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: data.message,
+            severity: "warning",
+          })
+        );
+      } else if (data.StatusCode === 6000) {
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: data.message,
+            severity: "success",
+          })
+        );
         // localStorage.setItem("UserCredentials", userData);
-        userData.newUser && navigate('/login')
-        userData.resetPassword && navigate('/resetpassword')
+        // userData.newUser && navigate('/login')
+        // userData.resetPassword && navigate('/resetpassword')
       }
     },
   });
@@ -84,10 +109,18 @@ const EmailVerify = () => {
 
   const resendOtp = function() {
     // // resendEmail()
+    setCounter(30)
     mutateEmailResend.mutate({
       email: userData.email
     })
   }
+
+  // Second Attempts
+  React.useEffect(() => {
+    const timer =
+      counter > 0 && setInterval(() => setCounter(counter - 1), 1000);
+    return () => clearInterval(timer);
+  }, [counter]);
  
   // useEffect(() => {
   //   console.log(userData === true);
@@ -109,7 +142,7 @@ const EmailVerify = () => {
           </p>
           <p className="text-[16px] font-[400]">{userData.email}</p>
           <p className="text-[#5346BD] text-[16px] font-[400] no-underline">
-            <Link to="/login">Change</Link>
+            {/* <Link to="/login">Change</Link> */}
           </p>
         </div>
         <div className="grid grid-cols-6 gap-x-2 mx-7 mb-2">
@@ -140,13 +173,14 @@ const EmailVerify = () => {
           ))} */}
           {/* <input type="number" min="0" max="9" step="1"/> */}
         </div>
+        {/* */}
         {invalidOTP && (
           <p className="text-[#C80000] text-[12px] font-[400] text-center mb-2">
             Incorrect OTP
           </p>
         )}
         <div>
-          <SaveButton actives={false} onClick={resendOtp}>Resent</SaveButton>
+          {counter === 0 ? <SaveButton actives={false} onClick={resendOtp}>Resent</SaveButton> : <div className="px-[18px] py-[7px] text-center mb-3" >Resend OTP in {counter} seconds</div>}
           <SaveButton actives={true} onClick={SubmitOTP}>
             {mutation.isLoading ? (
               <CircularProgress

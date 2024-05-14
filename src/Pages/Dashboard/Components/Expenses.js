@@ -38,8 +38,8 @@ const Expenses = () => {
   const { isLoading, data,  } = useQuery(["Expenses-list"], () =>
     financeList({
       finance_type: 1,
-      page_number: 1,
-      page_size: 1,
+      // page_number: 1,
+      // page_size: 1,
     })
   );
   const {
@@ -54,6 +54,15 @@ const Expenses = () => {
       search: searchValue,
     })
   );
+
+
+  const roundPersentage = function(amount, balance, total) {
+    let num = Math.round(((amount ?? balance) / total) * 100)
+    if (num === undefined || num === null || num === "" || isNaN(num)) {
+      return "0";
+    }
+    return num
+  }
 
   return (
     <>
@@ -129,14 +138,17 @@ const Expenses = () => {
               </div>
 
               <div className="mt-3">
-                {data?.graph_data.map((data, key) => (
+                {data?.graph_data.map((item, key) => (
                   <div className="flex items-center mb-2">
                     <div
                       className=" h-[11px] w-[11px] rounded-md mr-2"
                       style={{ backgroundColor: col[key] }}
                     />
                     <span className="text-[#858585] text-[14px] font-[400]">
-                      {data.amount || data.balance} % {data.account_name}
+                      {/* {item.amount || item.balance} % {item.account_name} */}
+                      {/* {Math.round(((item.amount ?? item.balance) / data?.summary.total) * 100)}  */}
+                      {roundPersentage(item.amount, item.balance, data?.summary.total)} % {item.account_name}
+                      {/* {!isLoading && console.log( Math.round(((item.amount ?? item.balance) / data?.summary.total) * 100), "idea is hear ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")} */}
                     </span>
                   </div>
                 ))}

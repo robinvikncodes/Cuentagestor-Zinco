@@ -102,7 +102,7 @@ const SignUp = () => {
               <Autocomplete
                 // {...defaultProps}
                 id="disable-close-on-select"
-                disableCloseOnSelect={false}
+                // disableCloseOnSelect={false}
                 options={data?.data || []}
                 getOptionLabel={(optiion) => optiion?.country_name}
                 sx={{
@@ -132,7 +132,7 @@ const SignUp = () => {
           <InputField
             icon={Icone.LockIcone}
             placeholder={"Password"}
-            isPassword={true}
+            ispassword={true}
             error={""}
             onChange={(e) =>
               setUserData({ ...userData, password1: e.target.value })
@@ -141,7 +141,7 @@ const SignUp = () => {
           <InputField
             icon={Icone.LockIcone}
             placeholder={"Conform Password"}
-            isPassword={true}
+            ispassword={true}
             error={""}
             onChange={(e) =>
               setUserData({ ...userData, password2: e.target.value })
@@ -179,7 +179,7 @@ const SignUp = () => {
                 color="secondary"
               />
             ) : (
-              "Sign in"
+              "Register"
             )}
           </SaveButton>
         </div>

@@ -4,13 +4,15 @@ import React, { useState } from "react";
 import InputField from "./Components/InputField";
 import { Icone, Images } from "../../Assets/AssetsLog";
 import { useMutation } from "react-query";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { resetPasswordOTP } from "../../Api/UserCredentials/UserCredentialsApi";
+import { openSnackbar } from "../../features/snackbar";
 
 const ResetPassword = () => {
   const navigate = useNavigate()
   const userData = useSelector(state => state.credentials.userDetails);
+  const dispatch = useDispatch()
 
   const [password, setPassword] = useState({
     email: userData.email,
@@ -26,7 +28,23 @@ const ResetPassword = () => {
     onSuccess: (data) => {
       console.log(data);
       if (data.StatusCode !== 6000) {
-        //SnackBar
+        //SnackBar        
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: data.message,
+            severity: "warning",
+          })
+        );
+      } else if (data.StatusCode === 6000){
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: data.message,
+            severity: "success",
+          })
+        );
+        navigate('/login')
       } else {
         // console.log(userDetailState);
         navigate('/login')
@@ -57,12 +75,16 @@ const ResetPassword = () => {
               placeholder={"Password"}
               error={""}
               onChange={ e => setPassword({ ...password, password1: e.target.value })}
+              required
+              ispassword={true}
             />
             <InputField
               icon={Icone.LockIcone}
               placeholder={"Confirm password"}
               error={""}
               onChange={ e => setPassword({ ...password, password2: e.target.value })}
+              required
+              ispassword={true}
             />
           </div>
 

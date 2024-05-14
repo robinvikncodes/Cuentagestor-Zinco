@@ -101,7 +101,7 @@ const PropertyAdd = (props) => {
         <IconButton onClick={() => props.handleClose()}>
           <img src={Icone.ClipIcon} alt="" />
         </IconButton>
-        <p className="text-[16px] font-[500]">Add Property</p>
+        <p className="text-[16px] font-[500]">{props.edit ? "Edit" : "Add"} Property</p>
         <IconButton type='submit' >
           <img src={Icone.CheckIcon} alt="" />
         </IconButton>

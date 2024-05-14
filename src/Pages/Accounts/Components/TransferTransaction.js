@@ -77,6 +77,11 @@ const TransferTransaction = (props) => {
     to: null,
   });
 
+  const [countryId, setCountryId] = useState({
+    from: "",
+    to: "",
+  })
+
   //Handle Functions
   const handleOpenNote = () => setOpenNote(true);
   const handleCloseNote = () => setOpenNote(false);
@@ -89,8 +94,8 @@ const TransferTransaction = (props) => {
     setDate(event.target.value);
   };
 
-  const handleCountry = (event) => {
-    console.log(event.target.value);
+  const handleCountry = (event, value) => {
+    console.log(value);
     toggle
       ? setfromCountry(event.target.value)
       : setToCountry(event.target.value);
@@ -104,6 +109,7 @@ const TransferTransaction = (props) => {
       ? setSelectCountry({ ...selectCountry, fromCountry: obj })
       : setSelectCountry({ ...selectCountry, toCountry: obj });
     toggle ? callFromAccount(obj.id) : callToAccount(obj.id);
+    toggle ? setCountryId({...countryId, from: obj.id }) : setCountryId({...countryId, to: obj.id})
   };
 
   const returnLogo = function (type) {
@@ -194,11 +200,12 @@ const TransferTransaction = (props) => {
         fromAccountlist: res.data,
       }));      
     }
+    setIsLoading({
+      ...isLoading,
+      from: true,
     });
-    // setIsLoading({
-    //   ...isLoading,
-    //   from: true,
-    // });
+    });
+    
   };
 
   const callToAccount = async function (id) {
@@ -222,10 +229,11 @@ const TransferTransaction = (props) => {
         ...prev,
         toAccountlist: res.data,
       }));
+      }
       setIsLoading({
         ...isLoading,
         to: true,
-      });}
+      });
     });
   };
 
@@ -448,13 +456,13 @@ const TransferTransaction = (props) => {
               placeholder={"search"}
               width={"100%"}
               valuen={toggle ? searchValue.from : searchValue.to}
-              onKeyDown={(e) => { if(e.key === "Enter") {toggle ? callFromAccount() : callToAccount()}}}
+              onKeyDown={(e) => { if(e.key === "Enter") {toggle ? callFromAccount(countryId.from) : callToAccount(countryId.to)}}}
               onChange={(e) =>
                 toggle
                   ? setSearchValue({ ...searchValue, from: e.target.value })
                   : setSearchValue({ ...searchValue, to: e.target.value })
               }
-              onClickBTN={() => (!toggle ? callFromAccount() : callToAccount())} 
+              onClickBTN={() => (!toggle ? callFromAccount(countryId.from) : callToAccount(countryId.to))} 
             />
             </div>
             {toggle && (

@@ -79,6 +79,7 @@ const AddLoan = (props) => {
   });
   const [expensesList, setExpensesList] = useState([]);
   const [searchValue, setSearchValue] = React.useState("");
+  const [searchValueEx, setSearchValueEx] = useState(null)
 
   const handleDays = function (event) {
     setDay(event.target.value);
@@ -119,13 +120,13 @@ const AddLoan = (props) => {
     }
   );
 
-  useQuery(
+  const {refetch: refetchExpenses} =  useQuery(
     "accountList_loan_expenses",
-    () => listAccount({ account_type: [4] }),
+    () => listAccount({ account_type: [4], search: searchValueEx }),
     {
       onSuccess: (res) => {
         // console.log(res);
-        if (res.StatusCode === 6000) {
+        if (res.StatusCode === 6000 && res.data.length > 0) {
           if (
             props.edit &&
             !submitData.is_ExistingLoan &&
@@ -144,8 +145,7 @@ const AddLoan = (props) => {
     }
   );
 
-  useEffect(() => {
-    const updateEMIData = function () {
+  const updateEMIData = function () {
       let eata = [];
       let temp = 1;
 
@@ -169,14 +169,14 @@ const AddLoan = (props) => {
         // };
         // }
 
-        let newDate = moment(submitData.loanDate).add(i, "months");
-
+        
         // if (day <= 8) {
-        //   newDate.date(day + 1);
-        // } else {
+          //   newDate.date(day + 1);
+          // } else {
+            // }
+            
+        let newDate = moment(submitData.loanDate).add(i, "months");
         newDate.date(day);
-        // }
-
         eata[i - temp] = {
           date: newDate.format("YYYY-MM-DD"),
           amount: 0,
@@ -186,6 +186,8 @@ const AddLoan = (props) => {
       setemiData(eata);
     };
 
+  useEffect(() => {
+    // updateEMIData()
     !props.edit && updateEMIData();
   }, [submitData.durationMonth, day]);
 
@@ -288,6 +290,7 @@ const AddLoan = (props) => {
         }
       } else if (whichButton === "next") {
         setSwap({ prev: true, next: false });
+        updateEMIData()
       }
     }
   };
@@ -793,10 +796,10 @@ const AddLoan = (props) => {
                   <SearchField
                     placeholder={"search"}
                     width={"100%"}
-                    valuen={searchValue}
-                    onKeyDown={(e) => e.key === "Enter" && refetch()}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    onClickBTN={() => refetch()}
+                    valuen={!submitData.is_Purchase ? searchValue: searchValueEx}
+                    onKeyDown={(e) =>{ if (e.key === "Enter") {!submitData.is_Purchase ? refetch() : refetchExpenses()}}}
+                    onChange={(e) => !submitData.is_Purchase ? setSearchValue(e.target.value) : setSearchValueEx(e.target.value)}
+                    onClickBTN={() => !submitData.is_Purchase ? refetch() : refetchExpenses() }
                   />
                   <div className="my-2 grid grid-cols-3 gap-2">
                     {!submitData.is_Purchase

@@ -31,6 +31,7 @@ const PayLoanPaymentModal = (props) => {
     amount: 0
   });
   const [selectAccount, setSelectAccount] = useState({});
+  const [searchValue, setSearchValue] = React.useState(null);
 
   //Handle functions
   const handleCloseNote = () => {
@@ -38,12 +39,12 @@ const PayLoanPaymentModal = (props) => {
   };
 
   // Data Fetching
-  const { isLoading: isLoadingCandB } = useQuery(
+  const { isLoading: isLoadingCandB, refetch } = useQuery(
     "cash&bank_list",
-    () => listAccount({ account_type: [1, 2] }),
+    () => listAccount({ account_type: [1, 2], search: searchValue }),
     {
       onSuccess: (res) => {
-        if (res.StatusCode === 6000) {
+        if (res.StatusCode === 6000 && res.data.length > 0) {
           setCandbList(res.data);
           setSelectAccount(res.data[0]); // Only set when edit is tru from the prop
         }
@@ -126,7 +127,10 @@ const PayLoanPaymentModal = (props) => {
         payload.amount = loanData.amount + parseFloat(calvalue)
     }
 
-    loanMutate.mutate(payload);
+    if (loanData.amount + parseFloat(calvalue) >= 0) {
+      loanMutate.mutate(payload);
+      
+    }
   };
   console.log(loanData,"outstanding_amountoutstanding_amount===>");
   return (
@@ -158,7 +162,12 @@ const PayLoanPaymentModal = (props) => {
         </div>
 
         <div className="p-3">
-          <SearchField />
+          <SearchField 
+            valuen={searchValue}
+            onKeyDown={(e) =>{ if (e.key === "Enter") { refetch() }}}
+            onChange={(e) =>  setSearchValue(e.target.value) }
+            onClickBTN={() =>  refetch() }
+          />
           <div className="mt-3 grid grid-cols-4 grid-rows-2 gap-2 w-[472.5px] h-[244px]">
             {!isLoadingCandB ? (
               candbList.slice(0, 7).map((data, key) => (

@@ -16,7 +16,7 @@ const InputField = (props) => {
           <img src={props.icon} alt="icone" className="mr-[-21px] z-10 " />
         )}
         {/* <input
-          type={props.isPassword ? (showPassword ? "text" : "password") : (props.type || "text")}
+          type={props.ispassword ? (showPassword ? "text" : "password") : (props.type || "text")}
           // type={!showPassword ? "text" : "password"}
           className={`custom-input ${props?.icon && "pl-[26px]"} p-[10px]`}
           placeholder={props?.placeholder || " "}
@@ -24,11 +24,11 @@ const InputField = (props) => {
         /> */}
         <input
           {...props}
-          type={props?.isPassword ? (showPassword ? "text" : "password") : (props.type || "text")}
+          type={props?.ispassword ? (showPassword ? "text" : "password") : (props.type || "text")}
           className={`custom-input ${props?.icon && "pl-[26px]"} p-[10px]`}
           placeholder={props?.placeholder || " "}
         />
-        {props?.isPassword && (
+        {props?.ispassword && (
           <IconButton
             aria-label="toggle password visibility"
             onClick={handleClickShowPassword}
