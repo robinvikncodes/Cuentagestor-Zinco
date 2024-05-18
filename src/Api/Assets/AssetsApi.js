@@ -160,6 +160,85 @@ const deleteDocument = async function(body) {
   return data;
 };
 
+
+// +++++++++++++++++++++ Partners +++++++++++++++++++++
+
+const createPartner = async function(body) {
+  const { data } = await axios.post("v1/assets/add-partner/", {
+    organization,
+    ...body,
+  });
+  return data;
+}
+
+const editPartner = async function(body) {
+  const { data } = await axios.post("v1/assets/edit-partner/", {
+    organization,
+    ...body,
+  });
+  return data;
+}
+
+
+const listDetailsPartner = async function(body) {
+  const { data } = await axios.post("v1/assets/partner/", {
+    organization,
+    ...body,
+  });
+  return data;
+}
+
+const deletePartner  = async function(body) {
+  const { data } = await axios.post("v1/assets/delete-partner/", {
+    organization,
+    ...body,
+  });
+  return data;
+}
+
+
+// +++++++++++++++++++++ Devidend +++++++++++++++++++++
+const listDetailsDividend = async function(body) {
+  const { data } = await axios.post("v1/finance/dividends/", {
+    organization,
+    ...body,
+  });
+  return data;
+}
+
+const createDividend = async function(body) {
+  const { data } = await axios.post("v1/finance/create-dividend/", {
+    organization,
+    ...body,
+  });
+  return data;
+}
+
+
+const updateDividend  = async function(body) {
+  const { data } = await axios.post("v1/finance/update-dividend/", {
+    organization,
+    ...body,
+  });
+  return data;
+}
+
+const closeDividend = async function(body) {
+  const { data } = await axios.post("v1/finance/close-dividend/", {
+    organization,
+    ...body,
+  });
+  return data;
+}
+
+const deleteDividend = async function(body) {
+  const { data } = await axios.post("v1/finance/delete-dividend/", {
+    organization,
+    ...body,
+  });
+  return data;
+}
+
 export {
   createAssets,
   updateAssets,
@@ -174,5 +253,16 @@ export {
   deleteStock,
   deleteProperty,
   deleteDocument,
-  editProperty
+  editProperty,
+
+  createPartner,
+  editPartner,
+  listDetailsPartner,
+  deletePartner,
+
+  listDetailsDividend,
+  createDividend,
+  updateDividend,
+  closeDividend,
+  deleteDividend,
 };

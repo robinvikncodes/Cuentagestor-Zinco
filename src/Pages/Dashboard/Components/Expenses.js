@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { Button, Skeleton } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
-import { Icone } from "../../../Assets/AssetsLog";
+import { CreatorIcons, Icone } from "../../../Assets/AssetsLog";
 import AddButton from "../../../Components/Component/AddButton";
 import SearchField from "../../../Components/Component/SearchField";
 import ZincoModal from "../../../Components/Component/ZincoModal";
@@ -191,9 +191,13 @@ const Expenses = () => {
                       <p className=" text-[10px] font-[400]">
                         {data.account_name}
                       </p>
-                      <div className="bg-[#F54040] p-[10px] rounded-[13px] my-[10px] inline-block">
-                        <img src={Icone.WalletAdd1Icon} alt="" className="" />
-                      </div>
+                      {data.color ? 
+                      <div style={{ backgroundColor: `#${data.color}`}} className={`p-[10px] rounded-[13px] my-[10px] inline-block`}>
+                        <img src={CreatorIcons[data.icon]} alt="" className="w-[25px] h-[25px]" />
+                      </div> : 
+                       <div className="bg-[#F54040] p-[10px] rounded-[13px] my-[10px] inline-block">
+                       <img src={Icone.WalletAdd1Icon} alt="" className="" />
+                     </div>}
                       <p className=" text-[10px] font-[400]">
                         {userData.country_details.currency_simbol}{" "}
                         {AmountFormater(data.balance)}

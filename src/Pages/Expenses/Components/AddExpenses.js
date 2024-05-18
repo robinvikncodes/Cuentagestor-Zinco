@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import ZincoModal from "../../../Components/Component/ZincoModal";
 import ZincoTextField from "../../../Components/Component/ZincoTextField";
-import { Icone } from "../../../Assets/AssetsLog";
+import { CreatorIcons, Icone } from "../../../Assets/AssetsLog";
 import styled from "@emotion/styled";
-import { Alert, Button, CircularProgress, Snackbar } from "@mui/material";
+import { Alert, Button, CircularProgress, IconButton, Snackbar } from "@mui/material";
 import { useMutation, useQueryClient } from "react-query";
 import {
   createAccount,
   updateAccount,
 } from "../../../Api/Accounts/AccountsApi";
+import { IconColor } from "../../../utilsValue";
 
 const AddExpenses = (props) => {
   console.log(props.data, "editttt");
@@ -18,11 +19,17 @@ const AddExpenses = (props) => {
     account_type: 4,
     account_name: "",
     opening_balance: "0",
+    color: "#7477E6",
+    icon: "BALL",
   });
 
   const [errorData, setErrorData] = useState("");
   const [open, setOpen] = React.useState(false);
   const [stype, setStype] = useState("");
+  // const [avtar, setAvtar] = useState({
+  //   color: "#7477E6",
+  //   icon: "BALL",
+  // });
 
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -45,6 +52,8 @@ const AddExpenses = (props) => {
         account_type: 4,
         account_name: "",
         opening_balance: "0",
+        color: "#7477E6",
+        icon: "BALL",
       });    
     }
   }, [props.edit]);
@@ -70,6 +79,8 @@ const AddExpenses = (props) => {
           account_type: 4,
           account_name: "",
           opening_balance: "0",
+          color: "#7477E6",
+          icon: "BALL",
         }); 
       }
     },
@@ -92,24 +103,35 @@ const AddExpenses = (props) => {
         account_type: 4,
         account_name: "",
         opening_balance: "0",
+        color: "#7477E6",
+        icon: "BALL",
       }); 
       }
     },
   });
 
   const submitData = () => {
+    const payload =  {
+      id: userData.id,
+      account_type: userData.account_type,
+      account_name: userData.account_name,
+      opening_balance: userData.opening_balance,
+      color: userData.color.slice(1),
+      icon: userData.icon,
+    }
     props.edit
-      ? editAccount.mutate({ ...userData })
-      : mutation.mutate({ ...userData });
+      ? editAccount.mutate(payload)
+      : mutation.mutate(payload);
   };
+
   // console.log(userData.account_name,"userData.account_name");
   // console.log(props.edit);
 
   return (
     <>
       <ZincoModal open={props.open} handleClose={props.handleClose}>
-        <div className="px-[26px] py-[21px] w-[400px]">
-          <div className="flex items-center mr-[10px] mb-5">
+        <div className=" pt-[21px] w-[400px]">
+          <div className="flex items-center mr-[10px] mb-5 px-[26px]">
             <div className="bg-[#FFEBF0] p-[10px] rounded-[13px] mr-[10px]">
               <img src={Icone.WalletAdd2Icon} alt="" />
             </div>
@@ -118,15 +140,62 @@ const AddExpenses = (props) => {
             </p>
           </div>
 
+          <div className="px-[26px]">
           <ZincoTextField
             value={userData.account_name}
             onChange={(e) =>
               setUserData({ ...userData, account_name: e.target.value })
             }
-            label={"Account Name"}
+            placeholder={"Account Name"}
           />
+          </div>
+          <div class="grid grid-cols-7 justify-items-center mb-4 px-[26px]">
+            {IconColor.map((e, i) => (
+              <IconButton
+                key={i}
+                sx={{
+                  width: "54px",
+                  height: "54px",
+                }}
+                onClick={() => setUserData({ ...userData, color: e })}
+              >
+                <div
+                  className="w-[38px] h-[38px] rounded-full"
+                  style={{
+                    backgroundColor: e,
+                    border: userData.color === e ? "3px solid white" : "none",
+                    boxShadow: userData.color === e ? "0 0 0 2px #3B3B3B" : "none",
+                  }}
+                ></div>
+              </IconButton>
+            ))}
+          </div>
 
-          <SaveButton
+          <div className="overflow-y-scroll h-[300px] border-t px-[26px] pt-2">
+          <div class="grid grid-cols-5 gap-2 justify-items-center mb-2">
+            {Object.keys(CreatorIcons).map((value, index) => (
+              <IconButton
+                sx={{
+                  width: "54px",
+                  height: "54px",
+                  backgroundColor: userData.color,
+                  alignItems: "center",
+                  border: userData.icon === value ? "3px solid white" : "none",
+                  boxShadow: userData.icon === value ? "0 0 0 2px #3B3B3B" : "none",
+                  ":hover": {
+                    backgroundColor: userData.color,
+                  },
+                }}
+                key={index}
+                onClick={() => setUserData({...userData, icon: value})}
+              >
+                {/* <div className="w-[38px] h-[38px] rounded-full" style={{ backgroundColor: e}}></div> */}
+                <img src={CreatorIcons[value]} alt="" />
+              </IconButton>
+            ))}
+          </div>
+          </div>
+          {/* <SaveButton
             disabled={mutation.isLoading}
             onClick={() => submitData()}
           >
@@ -148,7 +217,41 @@ const AddExpenses = (props) => {
           </SaveButton>
           <CancelButton onClick={() => props.handleClose()}>
             Cancel
-          </CancelButton>
+          </CancelButton> */}
+          <div className="flex justify-between items-center border-t px-[26px] py-1">
+            <IconButton onClick={() => props.handleClose()}>
+              <img src={Icone.ClipIcon} alt="" />
+            </IconButton>
+            <div className="flex items-center">
+              {/* <p className="text-[16px] font-[500]">
+                {selected?.expenses?.account_name}
+              </p>
+              <span className="text-[18px] font-[500] mx-2">{">"}</span>
+              <p className="text-[16px] font-[500]">
+                {selected?.candb?.account_name}
+              </p> */}
+              <p className="text-[16px] font-[500]">
+                {userData.account_name ? userData.account_name : "Account Name"}
+              </p>
+            </div>
+
+            <IconButton
+            disabled={mutation.isLoading}
+            onClick={() => submitData()}
+            // sx={{ width: "48px", height: "48px"}}
+            >
+              {mutation.isLoading ? (
+              <CircularProgress
+                sx={{
+                  color: "#7F52E8",
+                }}
+                size={30}
+                thickness={5}
+                color="secondary"
+              />
+            ) : <img src={Icone.CheckIcon} alt="" />}
+            </IconButton>
+          </div>
         </div>
       </ZincoModal>
       <Snackbar

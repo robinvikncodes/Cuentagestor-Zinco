@@ -19,6 +19,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { openSnackbar } from "../../features/snackbar";
 import { useDispatch, useSelector } from "react-redux";
 import { AmountFormater } from "../../globalFunctions";
+import Dividends from "./Components/Dividends";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
@@ -252,6 +253,14 @@ const Portfolio = () => {
               >
                 Transactions
               </StyledToggleButton>
+              <div className="mr-3"></div>
+              <StyledToggleButton
+                // disabled={userRollReducer?.asset.save_permission}
+                active={!boolean}
+                onClick={() => setBoolean(false)}
+              >
+                Dividends
+              </StyledToggleButton>
             </div>
 
             {boolean ? (
@@ -264,7 +273,11 @@ const Portfolio = () => {
                 assetDetailLoading={showAsset.isLoading}
               />
             ) : (
-              <Transactions
+              // <Transactions
+              //   assetDetail={assetDetails.data}
+              //   paramValue={paramValue}
+              // />
+              <Dividends
                 assetDetail={assetDetails.data}
                 paramValue={paramValue}
               />

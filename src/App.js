@@ -142,9 +142,9 @@ function App() {
             </div>
           </div>
         </ZincoModal> */}
+            {/* <img src={Images.ExpireDateImage} alt="" className="mb-4"/> */}
         <ZincoModal open={inviteUserData.open} handleClose={handleCloseInviteuser}>
           <div className="px-[48px] py-[41px]">
-            {/* <img src={Images.ExpireDateImage} alt="" className="mb-4"/> */}
             <iframe style={{width: "272px"}} title="loty" src="https://lottie.host/embed/de98b8ab-fcfe-4d43-a423-92e51a058a79/aJqsiphWLE.json"></iframe>
             <p className="text-[#5346BD] texxt-[16px] font-[400] text-center">
               You invited Successfully
@@ -167,7 +167,7 @@ function App() {
             </div>
           </div>
         </ZincoModal>
-        {!isHomePage && <ExpireWarningModal />}
+        {/* {!isHomePage && <ExpireWarningModal />} */}
       {/* </QueryClientProvider> */}
     </>
   );

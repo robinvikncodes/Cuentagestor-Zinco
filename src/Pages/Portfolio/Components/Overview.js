@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useDispatch, useSelector } from "react-redux";
 import { Icone } from "../../../Assets/AssetsLog";
 import { IconButton, Snackbar } from "@mui/material";
@@ -14,14 +14,18 @@ import PropertyAdd from "./Modals/PropertyAdd";
 import {
   addDocument,
   deleteDocument,
+  deletePartner,
   deleteProperty,
   deleteStock,
+  listDetailsPartner,
 } from "../../../Api/Assets/AssetsApi";
 import { openSnackbar } from "../../../features/snackbar";
 import { Doughnut } from "react-chartjs-2";
 import AssetGraph from "./AssetGraph";
 import ZincoEditIcon from "../../../Components/Component/ZincoEditIcon";
 import ZincoDeleteIcon from "../../../Components/Component/ZincoDeleteIcon";
+import PatnersAdd from "./Modals/PatnersAdd";
+import { AmountFormater } from "../../../globalFunctions";
 
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
@@ -245,12 +249,16 @@ const InfoOverview = function ({ assetDetail }) {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   const [openStock, setOpenStock] = useState(false);
+  const [openPatners, setOpenPatners] = useState(false);
   const [editStock, setEditStock] = useState(false);
   const [editProperty, seteditProperty] = useState(false)
   const [openProperty, setOpenProperty] = useState(false);
   const [addressDetail, setAddressDetail] = useState([]);
   const [selectStockData, setSelectStockData] = useState({});
   const [selectPropertyData, setSelectPropertyData] = useState({})
+
+  const [partnerData, setPartnerData] = useState({ data: [] })
+  const [selectedPartner, setSelectedPartner] = useState({})
 
   const handleCloseStock = () => {
     setOpenStock(false);
@@ -261,6 +269,9 @@ const InfoOverview = function ({ assetDetail }) {
     seteditProperty(false)
     queryClient.invalidateQueries(["show_Asset_data", assetDetail.data.id]);
   };
+  const handleClosePartner = () => {
+    setOpenPatners(false)
+  }
 
   const addFile = () => {
     const input = document.getElementById("fileInput");
@@ -291,6 +302,12 @@ const InfoOverview = function ({ assetDetail }) {
     seteditProperty(true);
     setOpenProperty(true);
   };
+
+  const handleEditPartner = function (e) {
+    setOpenPatners(true)
+    setSelectedPartner(e)
+  }
+
   const handleDeleteProperty = function (id) {
     propertyDeleteMutate.mutate({ property_id: id });
   };
@@ -298,6 +315,33 @@ const InfoOverview = function ({ assetDetail }) {
   const documentDeleteProperty = function (id) {
     documentDeleteMutate.mutate({ document_id: id });
   };
+
+  const handleDeletePartner = function (id) {
+    deletePartnerMutate.mutate({pk: id})
+  }
+
+
+  const { isLoading: isLoadingList } = useQuery(
+    ["list-patners"],
+    () => listDetailsPartner({ 
+      asset_master_id: assetDetail.data.id,
+      type: [1,2],
+		  search: "",   //only for list mode
+      mode: "list",   //list or details
+      is_dividend: true,  
+     }),
+    {
+      onSuccess: (res) => {
+        // console.log(res);
+        if (res.StatusCode === 6000) {
+          setPartnerData({
+            ...partnerData,
+            data: res.data,
+          });
+        }
+      },
+    }
+  );
 
   const fileUpload = useMutation({
     mutationFn: (newData) => addDocument(newData),
@@ -397,6 +441,30 @@ const InfoOverview = function ({ assetDetail }) {
           openSnackbar({
             open: true,
             message: data.errors,
+            severity: "error",
+          })
+        );
+      }
+    },
+  });
+
+  const deletePartnerMutate = useMutation({
+    mutationFn: (newData) => deletePartner(newData),
+    onSuccess: (data) => {
+      if (data.StatusCode === 6000) {
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: data.message,
+            severity: "success",
+          })
+        );
+        queryClient.invalidateQueries(["list-patners"]);
+      } else {
+        dispatch(
+          openSnackbar({
+            open: true,
+            message: data.errors || data.message,
             severity: "error",
           })
         );
@@ -654,6 +722,78 @@ const InfoOverview = function ({ assetDetail }) {
             ))
           )}
         </div>
+        
+        <div>
+          <div className="flex justify-between">
+            <p className="text-[16px] font-[500] ml-8 my-3">Partners</p>
+            <div>
+              {userRollReducer.asset.edit_permission && <AddButton
+                addbgcolor={"#EEE"}
+                onClick={() => setOpenPatners(true)}
+              />}
+            </div>
+          </div>
+          {partnerData.data.length === 0 ? (
+            <div>
+              <div
+                // key={data.id}
+                className="bg-white px-9 py-4 border-[1px] flex items-center"
+              >
+                <p className="mx-auto text-center">No Partner</p>
+              </div>
+            </div>
+          ) : (
+            partnerData.data.map((data) => data.id && (
+              <div
+                key={data.id}
+                className="bg-white px-9 py-4 border-[1px] flex items-center justify-between cursor-pointer"
+              >
+                <div onClick={() => handleEditPartner(data)}>
+                <div className="flex justify-between">
+                  <div>
+                  <p className="text-[14px] font-[400] text-[#785ED7]">
+                    {data.contact.name}
+                  </p>
+                  <p className="text-[15px] font-[400] ">
+                    {data.contact.phone}
+                  </p>
+                  </div>
+                  
+                </div>
+                </div>
+
+                <div className="flex">
+                <div className="mr-2">
+                  <p className="text-[14px] font-[400] text-[#785ED7]">
+                    Share <span className="text-black">{AmountFormater(data.share)}%</span> 
+                  </p>
+                  <p className="text-[14px] font-[400] text-[#785ED7]">
+                    {data.type === "1" ? "Share Holder" : "Working Partner" }
+                  </p>
+                  </div>
+                <IconButton
+                disabled={!userRollReducer.asset.edit_permission}
+                  aria-label="delete"
+                  color="error"
+                  size="small"
+                  sx={{
+                    width: "42px",
+                    color: "white",
+                    fontSize: "10px",
+                    bgcolor: "#CD0A0A",
+                    "&:hover": {
+                      bgcolor: "#CD0A0A",
+                    },
+                  }}
+                  onClick={() => handleDeletePartner(data.id)}
+                >
+                  <DeleteIcon sx={{ fontSize: "18px" }} />
+                </IconButton>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
         <div>
           <div className="flex justify-between">
@@ -679,8 +819,8 @@ const InfoOverview = function ({ assetDetail }) {
               <div
                 key={data.id}
                 className="bg-white px-9 py-4 border-[1px] flex items-center justify-between cursor-pointer"
+                onClick={() => handleEditProperty(data)}
               >
-                <div className="w-full" onClick={() => handleEditProperty(data)}>
                 <div className="flex justify-between w-[300px]">
                   <p className="text-[14px] font-[400] text-[#785ED7]">
                     {data.property_name}
@@ -688,7 +828,6 @@ const InfoOverview = function ({ assetDetail }) {
                   <p className="text-[15px] font-[400] ">
                     {data.property_value}
                   </p>
-                </div>
                 </div>
 
                 <IconButton
@@ -785,6 +924,13 @@ const InfoOverview = function ({ assetDetail }) {
           propertyData={selectPropertyData}
           account={assetDetail.data.id}
           handleClose={handleCloseProperty}
+        />
+      )}
+      {openPatners && (
+        <PatnersAdd
+          open={openPatners} 
+          handleClose={handleClosePartner} 
+          asset_master_id={assetDetail.data.id} 
         />
       )}
     </>

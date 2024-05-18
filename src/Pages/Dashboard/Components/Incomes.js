@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Icone } from "../../../Assets/AssetsLog";
+import { CreatorIcons, Icone } from "../../../Assets/AssetsLog";
 import AddButton from "../../../Components/Component/AddButton";
 import styled from "@emotion/styled";
 import { Button, Skeleton } from "@mui/material";
@@ -190,9 +190,13 @@ const Incomes = () => {
                       <p className=" text-[10px] font-[400]">
                         {data.account_name}
                       </p>
+                      {data.color ? 
+                      <div style={{ backgroundColor: `#${data.color}`}} className={`p-[10px] rounded-[13px] my-[10px] inline-block`}>
+                        <img src={CreatorIcons[data.icon]} alt="" className="w-[25px] h-[25px]" />
+                      </div> : 
                       <div className="bg-[#0FD28C] p-[10px] rounded-[13px] my-[10px] inline-block">
                         <img src={Icone.WalletAdd3Icon} alt="" className="" />
-                      </div>
+                      </div>}
                       <p className=" text-[10px] font-[400]">
                         {userData.country_details.currency_simbol}
                         {"  "} {AmountFormater(data.balance)}

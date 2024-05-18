@@ -8,7 +8,7 @@ import {
   Select,
 } from "@mui/material";
 import CircleIcon from "@mui/icons-material/Circle";
-import { Icone } from "../../../Assets/AssetsLog";
+import { CreatorIcons, Icone } from "../../../Assets/AssetsLog";
 import ZincoModal from "../../../Components/Component/ZincoModal";
 import SearchField from "../../../Components/Component/SearchField";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -21,6 +21,7 @@ import {
 } from "../../../Api/Loan/LoanApi";
 import { AmountFormater } from "../../../globalFunctions";
 import moment from "moment";
+import { IconColor } from "../../../utilsValue";
 
 const myDate = new Date();
 
@@ -64,6 +65,8 @@ const AddLoan = (props) => {
     fixedAmount: true,
     customEMI: false,
     emiAmount: "",
+    color: "#7477E6",
+    icon: "BALL",
   });
 
   const [emiData, setemiData] = useState([]);
@@ -79,7 +82,13 @@ const AddLoan = (props) => {
   });
   const [expensesList, setExpensesList] = useState([]);
   const [searchValue, setSearchValue] = React.useState("");
-  const [searchValueEx, setSearchValueEx] = useState(null)
+  const [searchValueEx, setSearchValueEx] = useState(null);
+  const [iconModal, seticonModal] = useState(false)
+
+
+  const iconModalClose = function() {
+    seticonModal(false)
+  }
 
   const handleDays = function (event) {
     setDay(event.target.value);
@@ -376,6 +385,8 @@ const AddLoan = (props) => {
         fixedAmount: true,
         customEMI: false,
         emiAmount: "",
+        color: "#7477E6",
+        icon: "BALL",
       });
       // !submitData.is_Purchase && !submitData.is_ExistingLoan && setSelectAccount({...selectAccount, id: props.loanSingle.to_account})
       // !submitData.is_ExistingLoan && submitData.is_Purchase && setSelectAccount({...selectAccount, id: props.loanSingle.to_account})
@@ -403,6 +414,8 @@ const AddLoan = (props) => {
         fixedAmount: true,
         customEMI: false,
         emiAmount: "",
+        color: "#7477E6",
+        icon: "BALL",
       });
       setSwap({ prev: false, next: true });
       setemiData([]);
@@ -435,23 +448,45 @@ const AddLoan = (props) => {
                 />
               </div>
 
-              <input
-                type="text"
-                required={true}
-                value={submitData.loan_name}
-                onChange={(e) => {
-                  setSubmitData({
-                    ...submitData,
-                    loan_name: e.target.value,
-                  });
-                  setReqiredField({
-                    ...reqiredField,
-                    name: false,
-                  });
-                }}
-                placeholder="Loan Name"
-                className="bg-[#F3F7FC] border border-[#D6D6D6] rounded text-[15px] p-2 w-full "
-              />
+              <div className="flex items-center">
+                {/* <div className="bg-[#F54040] p-[10px] mr-3 rounded-full inline-block">
+                  <img src={Icone.Archive2Icon} alt="" className="" />
+                </div> */}
+                <IconButton
+                  sx={{
+                    width:  "40px",
+                    height: "40px",
+                    backgroundColor: submitData.color,
+                    alignItems: "center",
+                    marginRight: "10px",
+                    ":hover": {
+                      backgroundColor: submitData.color,
+                    },
+                  }}
+                  // key={index}
+                  onClick={() => seticonModal(true)}
+                >
+                  {/* <div className="w-[38px] h-[38px] rounded-full" style={{ backgroundColor: e}}></div> */}
+                  <img src={CreatorIcons[submitData.icon]} alt="" />
+                </IconButton>
+                <input
+                  type="text"
+                  required={true}
+                  value={submitData.loan_name}
+                  onChange={(e) => {
+                    setSubmitData({
+                      ...submitData,
+                      loan_name: e.target.value,
+                    });
+                    setReqiredField({
+                      ...reqiredField,
+                      name: false,
+                    });
+                  }}
+                  placeholder="Loan Name"
+                  className="bg-[#F3F7FC] border border-[#D6D6D6] rounded text-[15px] p-2 w-full "
+                />
+              </div>
               {reqiredField.name && (
                 <label className="text-[10px] text-red-500">
                   * Loan Name is required
@@ -1106,6 +1141,7 @@ const AddLoan = (props) => {
           </div>
         </div>
       </div>
+      <AddIcones open={iconModal} handleClose={iconModalClose} userData={submitData} setUserData={setSubmitData} />
     </ZincoModal>
   );
 };
@@ -1127,3 +1163,71 @@ const StyledButton = styled(Button)(() => ({
   textTransform: "none",
   justifyContent: "flex-start",
 }));
+
+
+const AddIcones = function({open, handleClose, setUserData, userData}) {
+
+  return(
+    <>
+      <ZincoModal open={open} handleClose={handleClose}>
+        <div className="pt-[21px] w-[360.5px] ">
+          <div className="">
+          <div class="grid grid-cols-7 justify-items-center px-4 pb-3 border-b ">
+            {IconColor.map((e, i) => (
+              <IconButton
+                key={i}
+                sx={{
+                  width: "54px",
+                  height: "54px",
+                }}
+                onClick={() => setUserData({ ...userData, color: e })}
+              >
+                <div
+                  className="w-[38px] h-[38px] rounded-full"
+                  style={{
+                    backgroundColor: e,
+                    border: userData.color === e ? "3px solid white" : "none",
+                    boxShadow: userData.color === e ? "0 0 0 2px #3B3B3B" : "none",
+                  }}
+                ></div>
+              </IconButton>
+            ))}
+          </div>
+          <div className="overflow-y-scroll h-[300px] border-t">
+          <div class="grid grid-cols-5 gap-2 justify-items-center my-4 px-4">
+            {Object.keys(CreatorIcons).map((value, index) => (
+              <IconButton
+                sx={{
+                  width: "54px",
+                  height: "54px",
+                  backgroundColor: userData.color,
+                  alignItems: "center",
+                  border: userData.icon === value ? "3px solid white" : "none",
+                  boxShadow: userData.icon === value ? "0 0 0 2px #3B3B3B" : "none",
+                  ":hover": {
+                    backgroundColor: userData.color,
+                  },
+                }}
+                key={index}
+                onClick={() => setUserData({...userData, icon: value})}
+              >
+                <img src={CreatorIcons[value]} alt="" />
+              </IconButton>
+            ))}
+          </div>
+          </div>
+          </div>
+          <div className="flex justify-between items-center p-1 border-t">
+            <IconButton onClick={() => handleClose()}>
+              <img src={Icone.ClipIcon} alt="" />
+            </IconButton>
+
+            <IconButton disabled={false} onClick={() => handleClose()}>
+                <img src={Icone.CheckIcon} alt="" />
+              </IconButton>
+          </div>
+        </div>
+      </ZincoModal>
+    </>
+  )
+}
