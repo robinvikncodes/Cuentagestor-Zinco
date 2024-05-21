@@ -45,6 +45,8 @@ const AddExpenses = (props) => {
         ...prevState,
         id: props.data.id,
         account_name: props.data.accountName,
+        color: "#"+props.data.color,
+        icon: props.data.icon
       }));
     } else {
       setUserData({

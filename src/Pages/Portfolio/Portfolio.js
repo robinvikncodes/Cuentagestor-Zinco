@@ -29,9 +29,9 @@ const Portfolio = () => {
   const paramValue = searchParams.get("id");
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const userRollReducer = useSelector((state) => state.userRole.state);
+  // const userRollReducer = useSelector((state) => state.userRole.state);
 
-  const [boolean, setBoolean] = useState(true);
+  const [boolean, setBoolean] = useState("overview");
   const [edit, setEdit] = useState(false);
   const [isetPage, setIsetPage] = useState(false);
   const [open, setOpen] = React.useState(false);
@@ -240,30 +240,30 @@ const Portfolio = () => {
           <div className="RightContainer w-[72%]">
             <div className="flex items-center px-5 mb-5">
               <StyledToggleButton
-                active={boolean}
-                onClick={() => setBoolean(true)}
+                active={boolean === "overview"}
+                onClick={() => setBoolean("overview")}
               >
                 Overview
               </StyledToggleButton>
               <div className="mr-3"></div>
               <StyledToggleButton
                 // disabled={userRollReducer?.asset.save_permission}
-                active={!boolean}
-                onClick={() => setBoolean(false)}
+                active={boolean === "transaction"}
+                onClick={() => setBoolean("transaction")}
               >
                 Transactions
               </StyledToggleButton>
               <div className="mr-3"></div>
               <StyledToggleButton
                 // disabled={userRollReducer?.asset.save_permission}
-                active={!boolean}
-                onClick={() => setBoolean(false)}
+                active={boolean === "dividends"}
+                onClick={() => setBoolean("dividends")}
               >
                 Dividends
               </StyledToggleButton>
             </div>
 
-            {boolean ? (
+            {boolean === "overview" && (
               <Overview
                 editFun={editAsset}
                 deletFun={deleteAssetFun}
@@ -272,16 +272,20 @@ const Portfolio = () => {
                 assetDetail={assetDetails}
                 assetDetailLoading={showAsset.isLoading}
               />
-            ) : (
-              // <Transactions
-              //   assetDetail={assetDetails.data}
-              //   paramValue={paramValue}
-              // />
-              <Dividends
-                assetDetail={assetDetails.data}
-                paramValue={paramValue}
-              />
             )}
+
+            {boolean === "transaction" && 
+            <Transactions
+              assetDetail={assetDetails.data}
+              paramValue={paramValue}
+            /> }
+
+            {boolean === "dividends" &&
+            <Dividends
+              assetDetail={assetDetails.data}
+              paramValue={paramValue}
+            /> }
+            
           </div>
         )}
       </div>

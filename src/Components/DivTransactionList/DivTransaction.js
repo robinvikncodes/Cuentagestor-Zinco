@@ -13,7 +13,12 @@ import { deleteDividend } from "../../Api/Assets/AssetsApi";
 import { openSnackbar } from "../../features/snackbar";
 import { useDispatch } from "react-redux";
 
-const DivTransaction = ({ transData, handleOpenDivident, setSingleDivident, editDividentFun }) => {
+const DivTransaction = ({ 
+  transData, 
+  handleOpenDivident, 
+  setSingleDivident, 
+  editDividentFun 
+}) => {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   // let mainData = "";
@@ -121,6 +126,11 @@ const DivTransaction = ({ transData, handleOpenDivident, setSingleDivident, edit
     setSingleDivident(data)
   }
 
+  const dividentEdit = function(data) {
+    setSingleDivident(data)
+    editDividentFun()
+  }
+
   return (
     <div className="p-3">
 
@@ -179,7 +189,7 @@ const DivTransaction = ({ transData, handleOpenDivident, setSingleDivident, edit
               aria-label="delete"
               color="error"
               sx={{ color: "#3634A8" }}
-              onClick={() => editDividentFun()}
+              onClick={() => dividentEdit(list)}
             />}
             <IconButton
               aria-label="delete"

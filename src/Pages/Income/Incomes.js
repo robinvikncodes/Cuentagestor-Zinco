@@ -349,6 +349,8 @@ const Incomes = () => {
           data={{
             accountName: financeAccount?.summary?.account_name || "",
             id: paramValue,
+            color: financeAccount?.summary?.color,
+            icon: financeAccount?.summary?.icon,
           }}
         />
       )}

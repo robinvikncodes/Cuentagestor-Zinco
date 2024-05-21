@@ -322,6 +322,8 @@ const AddLoan = (props) => {
       to_account: "",
       // to_account: props.loanSingle.account,
       emi_data: emiData, //[{'date':'2023-05-06','amount':1560,'status':True}]
+      color: submitData.color,
+      icon: submitData.icon,
     };
 
     if (props?.loanSingle?.duration === "0") {
@@ -385,8 +387,8 @@ const AddLoan = (props) => {
         fixedAmount: true,
         customEMI: false,
         emiAmount: "",
-        color: "#7477E6",
-        icon: "BALL",
+        color: props.loanSingle.color,
+        icon: props.loanSingle.icon,
       });
       // !submitData.is_Purchase && !submitData.is_ExistingLoan && setSelectAccount({...selectAccount, id: props.loanSingle.to_account})
       // !submitData.is_ExistingLoan && submitData.is_Purchase && setSelectAccount({...selectAccount, id: props.loanSingle.to_account})

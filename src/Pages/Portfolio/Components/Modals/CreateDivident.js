@@ -12,6 +12,7 @@ import {
   listDetailsPartner,
   updateDividend,
 } from "../../../../Api/Assets/AssetsApi";
+import moment from "moment";
 import { DateCalendar, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import TextFieldCalculator from "../../../../Components/TextFieldCalculator/TextFieldCalculator";
@@ -22,12 +23,11 @@ import { AmountFormater } from "../../../../globalFunctions";
 import SkletionCard from "../../../../Components/Skletions/SkletionCard";
 import { listContact } from "../../../../Api/Contact/ContactApi";
 import { BaseUrl } from "../../../../globalVariable";
-import moment from "moment";
 import { openSnackbar } from "../../../../features/snackbar";
 // import { UserData } from "../../../../globalVariable";
 const userData = JSON.parse(localStorage.getItem("UserCredentials"));
 
-const CreateDivident = ({ open, edit, handleClose, data, assetDetail, handleOpenDivident }) => {
+const CreateDivident = ({ open, edit, handleClose, data, assetDetail, singleDivident }) => {
   const reducer = useSelector((state) => state.setting.settingDetails);
   const userRollReducer = useSelector((state) => state.userRole.state);
   const queryClient = useQueryClient();
@@ -37,7 +37,8 @@ const CreateDivident = ({ open, edit, handleClose, data, assetDetail, handleOpen
 
   //State
   const [value, setValue] = useState(0);
-  const [date, setDate] = useState(new Date().toISOString().substr(0, 10));
+  const [date, setDate] = useState(moment().format('YYYY-MM-DD'));
+  console.log(date, moment().format('YYYY-MM-DD'));
   const [accounts, setAccounts] = useState([{
     photo: "",
     id: "",
@@ -89,7 +90,7 @@ const CreateDivident = ({ open, edit, handleClose, data, assetDetail, handleOpen
   };
 
   const handleDateChange = (event) => {
-    setDate(event.target.value);
+    // setDate(event.target.value);
   };
 
   const next = function () {
@@ -98,7 +99,7 @@ const CreateDivident = ({ open, edit, handleClose, data, assetDetail, handleOpen
   console.log(accounts, "(((((((00009))))))");
   const submitTransaction = function () {
     let payload = {
-      date: moment().format("YYYY-MM-DD"),
+      date: date,
       time: moment().format('HH:mm:ss'),
       from_account: selected.expenses.id,
       to_account: selected.candb.id,
@@ -239,30 +240,48 @@ const CreateDivident = ({ open, edit, handleClose, data, assetDetail, handleOpen
     }
   );
 
-  // const { isLoading: isLoadingList } = 
-  // useQuery(
-  //   ["list-patners-create"],
-  //   () => listDetailsPartner({ 
-  //     asset_master_id: assetDetail.data.id,
-  //     type: [1,2],
-	// 	  search: "",   //only for list mode
-  //     mode: "list",   //list or details
-  //     is_dividend: true,  
-  //    }),
-  //   {
-  //     onSuccess: (res) => {
-  //       // console.log(res);
-  //       if (res.StatusCode === 6000) {
-  //         // setPartnerData({
-  //         //   ...partnerData,
-  //         //   data: res.data,
-  //         // });
-  //       }
-  //     },
-  //   }
-  // );
+  useEffect(() => {
+    if (singleDivident?.id) {
+      // console.log(singleDivident.amount);
+      setCalvalue(AmountFormater(singleDivident?.amount))
+      setSelected({
+        expenses: {id: singleDivident?.from_account},
+        candb: {id: singleDivident?.to_account},
+      })
+      setAccounts(singleDivident?.details)
+      setDate(singleDivident?.date)
+      setSubmitData({
+        ...submitData,
+        description: singleDivident?.singleDivident,
+        // reminder_date: singleDivident.
+      })
+      singleDivident?.details.map((se, si) => {
+        accountData.data.map((ae, ai) => {
+          if (se.id === ae.id) {
+            let newdata = []
+            newdata[ai] = se
+            setAccounts(newdata)
+          }
+          return ae;
+        })
+        return se;
+      })
+      // const updatedAccounts = singleDivident.details.reduce((acc, se) => {
+      //   accountData.data.forEach((ae) => {
+      //     if (se.id === ae.id) {
+      //       acc.push(se);
+      //     }
+      //   });
+      //   return acc;
+      // }, []);
+      
+      // setAccounts(updatedAccounts);
+      
+    }
+    
+  }, [singleDivident.id])
 
-
+  // console.log(accounts);
 
   return (
     <>
@@ -420,7 +439,7 @@ const CreateDivident = ({ open, edit, handleClose, data, assetDetail, handleOpen
           </div>
 
           <div className="flex justify-between">
-            {reducer.is_interest && (
+            {/* {reducer.is_interest && (
               <StyledButton
                 onClick={() =>
                   setSubmitData({
@@ -439,7 +458,7 @@ const CreateDivident = ({ open, edit, handleClose, data, assetDetail, handleOpen
               >
                 Use Interest
               </StyledButton>
-            )}
+            )} */}
             {reducer.is_zakath && (
               <StyledButton
                 onClick={() =>
@@ -469,12 +488,12 @@ const CreateDivident = ({ open, edit, handleClose, data, assetDetail, handleOpen
             >
               Notes
             </StyledButton>
-            <StyledButton
+            {/* <StyledButton
               onClick={() => handleOpenReminder()}
               startIcon={<img src={Icone.TimeIcon} alt="" />}
             >
               Set Reminder
-            </StyledButton>
+            </StyledButton> */}
           </div>
           </>}
 
@@ -545,7 +564,8 @@ const CreateDivident = ({ open, edit, handleClose, data, assetDetail, handleOpen
                           )}
                       </td>
                       <td>
-                      {data.contact.name}
+                      {data.contact.name ? data.contact.name : <>{userData.username} <span className="text-[#3633A8]">(You)</span></>} <span className="text-[#858585]">({AmountFormater(data.share)}%)</span>
+                      {/* <span className="text-[#858585]">({AmountFormater(data.share)}%)</span> */}
                       </td>
                       <td align="right">
                           <IconButton onClick={() => onSubmit(data, key)} >

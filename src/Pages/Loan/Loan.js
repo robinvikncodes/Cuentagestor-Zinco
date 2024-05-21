@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@mui/material";
 import React, { useState } from "react";
-import { Icone } from "../../Assets/AssetsLog";
+import { CreatorIcons, Icone } from "../../Assets/AssetsLog";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -41,6 +41,12 @@ const Loan = () => {
 
   const [openAddLoan, setOpenAddLoan] = useState(false);
   const [listLoan, setListLoan] = useState([]);
+  const [loansummary, setLoansummary] = useState({
+    next_month_pending :0,
+    numbers :0,
+    this_month_pending :0,
+    tot_outstanding:0
+  })
   const [loanSingle, setloanSingle] = useState({});
   const [toggleBtn, setToggleBtn] = useState(true);
   const [openPayLoan, setopenPayLoan] = useState(false);
@@ -79,6 +85,7 @@ const Loan = () => {
         // setExpensesList(res.data);
         if (res.StatusCode === 6000) {
           setListLoan(res.data);
+          setLoansummary(res.summary)
         }
       },
     }
@@ -146,22 +153,35 @@ const Loan = () => {
                 <p className="text-[16px] font-[400]">Loans</p>
               </div>
               <div className="flex">
-                {/* <div className="mr-2">
+                <div className="mr-2">
                   <p className=" text-[#7F52E8] text-[13px] font-[400] text-right">
-                    12 Assets
+                    Total Outstanding
                   </p>
-                  <p className=" text-[14px] font-[400]">
+                  <p className=" text-[14px] font-[400] text-right">
                     <span className=" text-[#9B9B9B] text-[12px] font-[400] mr-1">
                       {userData.country_details.currency_simbol}
                     </span>
-                    10,00.000.00
+                    {AmountFormater(loansummary.tot_outstanding)}
                   </p>
-                </div> */}
+                </div>
                 <AddButton name="loan" onClick={() => setOpenAddLoan(true)} />
               </div>
             </div>
 
             {/*  */}
+            <div className="flex justify-between gap-2 mb-2">
+              <div className="p-2 border rounded-md w-full">
+                <p className="text-[#7F52E8] text-xs">Pending</p>
+                <p className="text-[14px]"> <span className="text-[#9B9B9B] text-[12px]">{userData.country_details.currency_simbol}</span> {AmountFormater(loansummary.this_month_pending)}</p>
+                <p className="text-[#9B9B9B] text-[12px]">This Month</p>
+              </div>
+
+              <div className="p-2 border rounded-md w-full">
+                <p className="text-[#7F52E8] text-xs">Pending</p>
+                <p className="text-[14px]"> <span className="text-[#9B9B9B] text-[12px]">{userData.country_details.currency_simbol}</span> {AmountFormater(loansummary.next_month_pending)}</p>
+                <p className="text-[#9B9B9B] text-[12px]">This Month</p>
+              </div>
+            </div>
 
             <SearchField
               placeholder={"search"}
@@ -196,9 +216,13 @@ const Loan = () => {
                             sameElse: "DD/MM/YYYY",
                           }) || "Day"}
                         </p>
-                        <div className="bg-[#F54040] p-[10px] rounded-[13px] my-[10px] inline-block">
+                        {obj.color ? 
+                          <div style={{ backgroundColor: `${obj.color}`}} className={`p-[10px] rounded-[13px] my-[10px] inline-block`}>
+                            <img src={CreatorIcons[obj.icon]} alt="" className="w-[25px] h-[25px]" />
+                          </div>
+                        : <div className="bg-[#F54040] p-[10px] rounded-[13px] my-[10px] inline-block">
                           <img src={Icone.Archive2Icon} alt="" className="" />
-                        </div>
+                        </div>}
                         <p className=" text-[10px] font-[400]">
                           {userData.country_details.currency_simbol}{" "}
                           {AmountFormater(obj.loan_amount) || "00.00"}

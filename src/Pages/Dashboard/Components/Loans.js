@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Icone } from "../../../Assets/AssetsLog";
+import { CreatorIcons, Icone } from "../../../Assets/AssetsLog";
 import AddButton from "../../../Components/Component/AddButton";
 import { Button } from "@mui/material";
 import styled from "@emotion/styled";
@@ -88,9 +88,13 @@ const Loans = () => {
                       sameElse: "DD/MM/YYYY",
                     }) || "Day"}
                   </p>
-                  <div className="bg-[#F54040] p-[10px] rounded-[13px] my-[10px] inline-block">
+                  {obj.color ? 
+                    <div style={{ backgroundColor: `${obj.color}`}} className={`p-[10px] rounded-[13px] my-[10px] inline-block`}>
+                      <img src={CreatorIcons[obj.icon]} alt="" className="w-[25px] h-[25px]" />
+                    </div>
+                  : <div className="bg-[#F54040] p-[10px] rounded-[13px] my-[10px] inline-block">
                     <img src={Icone.Archive2Icon} alt="" className="" />
-                  </div>
+                  </div>}
                   <p className=" text-[10px] font-[400]">
                     {userData.country_details.currency_simbol}{" "}
                     {AmountFormater(obj.loan_amount) || "00.00"}
